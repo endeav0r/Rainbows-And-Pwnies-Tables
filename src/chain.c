@@ -29,11 +29,13 @@ void chains_mini_havege_init ()
 uint64_t chains_mini_havege ()
 {
     int i;
+    uint64_t index;
     uint64_t r = 0;
 
-    for (i = 0; i < CHAINS_MH_SIZE; i++) {
-        r += CHAINS_MH_BUF[i];
-        CHAINS_MH_BUF[i] += CHAINS_MH_BUF[(i + 1) % CHAINS_MH_SIZE] + (uint64_t) clock();
+    for (i = 0; i < 4; i++) {
+        index = r % CHAINS_MH_SIZE;
+        r += CHAINS_MH_BUF[index];
+        CHAINS_MH_BUF[index] += CHAINS_MH_BUF[r % CHAINS_MH_SIZE] + (uint64_t) clock();
     }
 
     return r;
@@ -55,6 +57,10 @@ _chains * chains_create (uint64_t num_chains)
     for (chain_i = 0; chain_i < num_chains; chain_i++) {
         chains->chains[chain_i].start = chains_mini_havege();
         chains->chains[chain_i].end   = chains->chains[chain_i].start;
+        if (chain_i % 0x10000 == 0)
+            printf("seeded %lld of %lld chains\n",
+                   (unsigned long long) chain_i,
+                   (unsigned long long) num_chains);
     }
 
     return chains;
@@ -77,7 +83,7 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
 
     for (chain_i = 0; chain_i < chains->num_chains; chain_i++) {
         chain_generate(&(chains->chains[chain_i]), chains->length, length, hash, plaintext);
-        if (((chain_i + 1) % 1024) == 0) {
+        if (((chain_i + 1) % 16384) == 0) {
             printf("chain %lld of %lld done\n",
                    (unsigned long long) chain_i + 1,
                    (unsigned long long) chains->num_chains);

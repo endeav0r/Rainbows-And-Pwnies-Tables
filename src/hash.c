@@ -1,16 +1,31 @@
 #include "hash.h"
 
+#include "md4.h"
+#include "md5.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-_hash * hash_create (int sum_size, HASH_FUNC)
+_hash * hash_create (int hash_type)
 {
     _hash * hash;
 
     hash = (_hash *) malloc(sizeof(_hash));
-    hash->sum_size = sum_size;
-    hash->hash_func = hash_func;
+
+    switch (hash_type) {
+    case HASH_MD4 :
+        hash->sum_size = 16;
+        hash->hash_func = md4_hash;
+        break;
+    case HASH_MD5 :
+        hash->sum_size = 16;
+        hash->hash_func = md5_hash;
+        break;
+    default :
+        fprintf(stderr, "invalid hash type. enjoy the crash.\n");
+        break;
+    }
 
     return hash;
 }

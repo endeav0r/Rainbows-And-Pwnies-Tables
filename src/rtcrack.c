@@ -2,8 +2,6 @@
 #include "chain.h"
 #include "hash.h"
 
-#include "md4.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -16,6 +14,11 @@ void print_help ()
     printf("  -c  <string>  character set\n");
     printf("  -f  <string>  filename to read chains from\n");
     printf("  -p  <int>     length of plaintext\n");
+    printf("  -t  <int>     hash type\n");
+    printf("\n");
+    printf("hash types:\n");
+    printf("  1   MD4\n");
+    printf("  2   MD5\n");
     printf("\n");
     printf("optional arguments\n");
     printf("  -h            this help message\n");
@@ -31,8 +34,9 @@ int main (int argc, char * argv[])
     char * charset = NULL;
     char * filename = NULL;
     int    plaintext_length = -1;
+    int    hash_type = 0;
     
-    while ((c = getopt(argc, argv, "c:f:p:h")) != -1) {
+    while ((c = getopt(argc, argv, "c:f:p:ht:")) != -1) {
         switch (c) {
         case 'c' :
             charset = optarg;
@@ -46,6 +50,9 @@ int main (int argc, char * argv[])
         case 'h' :
             print_help();
             return 0;
+        case 't' :
+            hash_type = atoi(optarg);
+            break;
         case '?' :
             fprintf(stderr, "error with options, use -h for help\n");
             return -1;
@@ -58,17 +65,20 @@ int main (int argc, char * argv[])
         fprintf(stderr, "must give an output filename.\n");
     if (plaintext_length == -1)
         fprintf(stderr, "must give a plaintext length.\n");
+    if (hash_type == 0)
+        fprintf(stderr, "must give a hash type\n");
     if (optind >= argc)
         fprintf(stderr, "must give hash as argument.\n");
     if (    (charset == NULL)
          || (filename == NULL)
          || (plaintext_length == -1)
+         || (hash_type == 0)
          || (optind >= argc)) {
         fprintf(stderr, "use -h for help\n");
         return -1;
     }
 
-    hash      = hash_create(16, md4_hash);
+    hash      = hash_create(hash_type);
     plaintext = plaintext_create(charset, plaintext_length);
 
     chains = chains_read(filename);
