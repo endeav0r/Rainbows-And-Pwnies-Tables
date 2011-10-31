@@ -32,7 +32,7 @@ uint64_t chains_mini_havege ()
     uint64_t index;
     uint64_t r = 0;
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 8; i++) {
         index = r % CHAINS_MH_SIZE;
         r += CHAINS_MH_BUF[index];
         CHAINS_MH_BUF[index] += CHAINS_MH_BUF[r % CHAINS_MH_SIZE] + (uint64_t) clock();
