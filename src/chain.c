@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#define CHAINS_MH_SIZE 64
+#define CHAINS_MH_SIZE 16
 
 uint64_t CHAINS_MH_BUF[CHAINS_MH_SIZE];
 
@@ -29,13 +29,11 @@ void chains_mini_havege_init ()
 uint64_t chains_mini_havege ()
 {
     int i;
-    uint64_t index;
     uint64_t r = 0;
 
-    for (i = 0; i < 8; i++) {
-        index = r % CHAINS_MH_SIZE;
-        r += CHAINS_MH_BUF[index];
-        CHAINS_MH_BUF[index] += CHAINS_MH_BUF[r % CHAINS_MH_SIZE] + (uint64_t) clock();
+    for (i = 0; i < CHAINS_MH_SIZE; i++) {
+        r += CHAINS_MH_BUF[i];
+        CHAINS_MH_BUF[i] += CHAINS_MH_BUF[r % CHAINS_MH_SIZE] + (uint64_t) clock();
     }
 
     return r;
@@ -133,17 +131,23 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
     printf("searching for endings\n");
     chain_i = 0;
     for (depth = 0; depth < chains->length; depth++) {
+        while (chains->chains[chain_i].end < search_chains[depth].end) {
+            chain_i++;
+            if (chain_i >= chains->num_chains)
+                break;
+        }
         if (chain_i >= chains->num_chains)
             break;
-        while (chains->chains[chain_i].end < search_chains[depth].end)
-            chain_i++;
         // if ends match
         if (chains->chains[chain_i].end == search_chains[depth].end) {
             false_finds++;
 
             text = chain_search(&(chains->chains[chain_i]), chains->length, hash, plaintext, needle_index);
-            if (text != NULL)
+            if (text != NULL) {
+                printf("\n");
                 return text;
+            }
+            printf(".");
         }
     }
 

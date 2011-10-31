@@ -53,10 +53,10 @@ void md5_hash (unsigned char * sum, unsigned char * data, int data_len)
 
 	md5_transform(&context);
 	
-    *((uint32_t *) &(sum[ 0])) = md5_l2bendian(context.A);
-    *((uint32_t *) &(sum[ 4])) = md5_l2bendian(context.A);
-    *((uint32_t *) &(sum[ 8])) = md5_l2bendian(context.A);
-    *((uint32_t *) &(sum[12])) = md5_l2bendian(context.A);
+    *((uint32_t *) &(sum[ 0])) = context.A;
+    *((uint32_t *) &(sum[ 4])) = context.B;
+    *((uint32_t *) &(sum[ 8])) = context.C;
+    *((uint32_t *) &(sum[12])) = context.D;
 }
 
 
@@ -68,14 +68,8 @@ void md5_transform (struct md5_context * context)
 	uint32_t b;
 	uint32_t c;
 	uint32_t d;
-	/*
-	printf("%08x %08x %08x %08x\n", context->M[ 0], context->M[ 1], context->M[ 2], context->M[ 3]);
-	printf("%08x %08x %08x %08x\n", context->M[ 4], context->M[ 5], context->M[ 6], context->M[ 7]);
-	printf("%08x %08x %08x %08x\n", context->M[ 8], context->M[ 9], context->M[10], context->M[11]);
-	printf("%08x %08x %08x %08x\n", context->M[12], context->M[13], context->M[14], context->M[15]);
-	printf("\n");
-	*/
-	a = context->A;
+	
+    a = context->A;
 	b = context->B;
 	c = context->C;
 	d = context->D;

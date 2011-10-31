@@ -112,7 +112,7 @@ int main (int argc, char * argv[])
            (long long int) chains->num_chains);
 
     if (chain_duplicates > 0) {
-        for (i = 1; i * chain_duplicates < chain_length; i++) {
+        for (i = 1; i * chain_duplicates <= chain_length; i++) {
             printf("expanding chains from %d to %d\n", chains->length, i * chain_duplicates);
             chains_generate(chains, chain_duplicates * i, hash, plaintext);
             printf("sorting and removing duplicates\n");
@@ -124,8 +124,11 @@ int main (int argc, char * argv[])
         //chains_perfect(chains);
     }
 
+    printf("final chains sort\n");
     chains_sort(chains);
 
+    printf("final chain count: %lld\n", chains->num_chains);
+    printf("writing chains\n");
     chains_write(chains, filename);
 
     hash_destroy(hash);
