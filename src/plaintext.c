@@ -36,12 +36,13 @@ char * plaintext_gen (_plaintext * plaintext, uint64_t seed)
 {
     int i;
     int pi = 0;
-    uint64_t div, mod, diff;
+    uint64_t div;//, mod, diff;
     uint64_t plaintext_length = plaintext->plaintext_length;
     uint64_t charset_length = plaintext->charset_length;
     char * charset = plaintext->charset;
     char * text = plaintext->plaintext;
 
+/*
     if ((plaintext_length < 11) && (charset_length < 64)) {
         diff = 0x3f % charset_length;
         for (i = 0; i < plaintext_length; i++) {
@@ -60,15 +61,16 @@ char * plaintext_gen (_plaintext * plaintext, uint64_t seed)
         }
     }
     else {
-        for (i = 0; i < plaintext_length; i++) {
-            // division is *really* slow, so we do it just once
-            div = seed / charset_length;
-            text[pi++] = charset[seed - (charset_length * div)];
-            seed = div;
-            if (seed == 0)
-                break;
-        }
-    } 
+*/
+    for (i = 0; i < plaintext_length; i++) {
+        // division is *really* slow, so we do it just once
+        div = seed / charset_length;
+        text[pi++] = charset[seed - (charset_length * div)];
+        seed = div;
+        if (seed == 0)
+            break;
+    }
+//  } 
 
     text[pi] = '\0';
 
