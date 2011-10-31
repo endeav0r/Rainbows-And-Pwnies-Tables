@@ -124,14 +124,6 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
 
     // go through our search chains, checking for identical endings
 
-/*
-    for (chain_i = 0; chain_i < chains->num_chains; chain_i++) {
-        text = chain_search(&(chains->chains[chain_i]), chains->length, hash, plaintext, needle_index);
-        if (text != NULL)
-            return text;
-    }
-*/
-
     printf("searching for endings\n");
     chain_i = 0;
     for (depth = 0; depth < chains->length; depth++) {
@@ -139,8 +131,6 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
             break;
         while (chains->chains[chain_i].end < search_chains[depth].end)
             chain_i++;
-//        printf("searching for %016llx against  %016llx\n",
-//               search_chains[depth].end, chains->chains[chain_i].end);
         // if ends match
         if (chains->chains[chain_i].end == search_chains[depth].end) {
             false_finds++;
@@ -247,7 +237,6 @@ int chain_generate (_chain * chain, int start_length, int length, _hash * hash, 
         hash_hash(hash, 
                   (unsigned char *) plaintext_gen(plaintext, index),
                   plaintext->plaintext_length);
-//        printf("%016llx %s\n", hash_index(hash), plaintext_gen(plaintext, index));
         index =  hash_index(hash);
         index += length_i;
     }
@@ -267,11 +256,8 @@ char * chain_search (_chain * chain, int length, _hash * hash, _plaintext * plai
         hash_hash(hash, 
                   (unsigned char *) plaintext_gen(plaintext, index),
                   plaintext->plaintext_length);
-        if (needle == hash_index(hash)) {
-            printf("found needle: %016llx index %016llx\n", needle, hash_index(hash));
-            printf("depth: %d %d\n", length, length_i);
+        if (needle == hash_index(hash))
             return plaintext_gen(plaintext, index);
-        }
         index = hash_index(hash);
         index += length_i;
     }
