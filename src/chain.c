@@ -16,7 +16,7 @@ void chains_mini_havege_init ()
     for (i = 0; i < CHAINS_MH_SIZE * 1024; i++) {
         r += (uint64_t) clock();
         r += r / 13;
-        r ^= (r + (uint64_t) clock) << 32;
+        r ^= (r + (uint64_t) clock()) << 32;
         if (r & 1)
             r += r % 17;
         if (r & 2)
