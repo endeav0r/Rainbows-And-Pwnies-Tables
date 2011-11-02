@@ -62,7 +62,7 @@ int main (int argc, char * argv[])
             plaintext_length = atoi(optarg);
             break;
         case 'n' :
-            num_chains = atoi(optarg);
+            num_chains = strtoull(optarg, NULL, 10);
             break;
         case 'l' :
             chain_length = atoi(optarg);
