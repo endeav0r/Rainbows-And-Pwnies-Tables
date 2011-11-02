@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#define CHAINS_MH_SIZE 16
+#define CHAINS_MH_SIZE 64 
 
 uint64_t CHAINS_MH_BUF[CHAINS_MH_SIZE];
 
