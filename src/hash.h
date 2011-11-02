@@ -17,6 +17,7 @@ typedef struct _hash_s {
 
 _hash *  hash_create  (int hash_type);
 void     hash_destroy (_hash * hash);
+_hash *  hash_copy    (_hash * src);
 
 int      hash_from_string (_hash * hash, char * string);
 

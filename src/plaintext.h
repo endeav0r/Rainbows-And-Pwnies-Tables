@@ -15,6 +15,7 @@ typedef struct _plaintext_s {
 
 _plaintext * plaintext_create  (char * charset, int plaintext_length);
 void         plaintext_destroy (_plaintext * plaintext);
+_plaintext * plaintext_copy    (_plaintext * src);
 
 char * plaintext_gen (_plaintext * plaintext, uint64_t seed);
 

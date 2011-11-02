@@ -30,6 +30,24 @@ void plaintext_destroy (_plaintext * plaintext)
 }
 
 
+_plaintext * plaintext_copy (_plaintext * src)
+{
+    _plaintext * dst;
+
+    dst = (_plaintext *) malloc(sizeof(_plaintext));
+
+    dst->charset_length = src->charset_length;
+    dst->plaintext_length = src->plaintext_length;
+    
+    dst->charset = (char *) malloc(dst->charset_length);
+    memcpy(dst->charset, src->charset, dst->charset_length);
+
+    memcpy(dst->plaintext, src->plaintext, PLAINTEXT_MAX_LEN + 1);
+
+    return dst;
+}
+
+
 // this function is a huge bottleneck, mainly because of division, so we
 // do whatever we can to make it faster
 char * plaintext_gen (_plaintext * plaintext, uint64_t seed)

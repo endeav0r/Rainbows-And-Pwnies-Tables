@@ -1,10 +1,11 @@
 #include "chain.h"
 
+#include <omp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
-#define CHAINS_MH_SIZE 64 
+#define CHAINS_MH_SIZE 16 
 
 uint64_t CHAINS_MH_BUF[CHAINS_MH_SIZE];
 
@@ -13,7 +14,7 @@ void chains_mini_havege_init ()
     uint64_t r = clock();
     int i;
 
-    for (i = 0; i < CHAINS_MH_SIZE * 1024; i++) {
+    for (i = 0; i < CHAINS_MH_SIZE * 10240; i++) {
         r += (uint64_t) clock();
         r += r / 13;
         r ^= (r + (uint64_t) clock()) << 32;
@@ -52,10 +53,12 @@ _chains * chains_create (uint64_t num_chains)
 
     chains_mini_havege_init();
 
+    printf("chains_create num threads: %d\n", omp_get_max_threads());
+
     for (chain_i = 0; chain_i < num_chains; chain_i++) {
         chains->chains[chain_i].start = chains_mini_havege();
         chains->chains[chain_i].end   = chains->chains[chain_i].start;
-        if (chain_i % 0x10000 == 0)
+        if (chain_i % 0x80000 == 0)
             printf("seeded %lld of %lld chains\n",
                    (unsigned long long) chain_i,
                    (unsigned long long) num_chains);
@@ -75,18 +78,42 @@ void chains_destroy (_chains * chains)
 int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * plaintext)
 {
     uint64_t chain_i;
+    int i;
+    _hash ** thread_hash;
+    _plaintext ** thread_plaintext;
 
     if (length <= chains->length)
         return -1;
 
+    printf("chains_generate num threads: %d\n", omp_get_max_threads());
+
+    thread_hash = (_hash **) malloc(sizeof(_hash *) * omp_get_max_threads());
+    thread_plaintext = (_plaintext **) malloc(sizeof(_plaintext *) * omp_get_max_threads());
+    for (i = 0; i < omp_get_max_threads(); i++) {
+        thread_hash[i] = hash_copy(hash);
+        thread_plaintext[i] = plaintext_copy(plaintext);
+    }
+
+    #pragma omp parallel for schedule(dynamic, 1024)
     for (chain_i = 0; chain_i < chains->num_chains; chain_i++) {
-        chain_generate(&(chains->chains[chain_i]), chains->length, length, hash, plaintext);
+        chain_generate(&(chains->chains[chain_i]),
+                       chains->length,
+                       length,
+                       thread_hash[omp_get_thread_num()],
+                       thread_plaintext[omp_get_thread_num()]);
         if (((chain_i + 1) % 16384) == 0) {
             printf("chain %lld of %lld done\n",
                    (unsigned long long) chain_i + 1,
                    (unsigned long long) chains->num_chains);
         }
     }
+
+    for (i = 0; i < omp_get_max_threads(); i++) {
+        hash_destroy(thread_hash[i]);
+        plaintext_destroy(thread_plaintext[i]);
+    }
+    free(thread_hash);
+    free(thread_plaintext);
 
     chains->length = length;
 

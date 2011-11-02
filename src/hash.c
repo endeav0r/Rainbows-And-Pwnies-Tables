@@ -37,6 +37,19 @@ void hash_destroy (_hash * hash)
 }
 
 
+_hash * hash_copy (_hash * src)
+{
+    _hash * dst;
+
+    dst = (_hash *) malloc(sizeof(_hash));
+    dst->sum_size = src->sum_size;
+    dst->hash_func = src->hash_func;
+    memcpy(dst->sum, src->sum, HASH_SUM_MAX_SIZE);
+
+    return dst;
+}
+
+
 void hash_hash (_hash * hash, unsigned char * data, int data_len)
 {
     hash->hash_func(hash->sum, data, data_len);
