@@ -127,7 +127,7 @@ int main (int argc, char * argv[])
     printf("final chains sort\n");
     chains_sort(chains);
 
-    printf("final chain count: %lld\n", chains->num_chains);
+    printf("final chain count: %lld\n", (unsigned long long int) chains->num_chains);
     printf("writing chains\n");
     chains_write(chains, filename);
 
