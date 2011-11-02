@@ -53,8 +53,6 @@ _chains * chains_create (uint64_t num_chains)
 
     chains_mini_havege_init();
 
-    printf("chains_create num threads: %d\n", omp_get_max_threads());
-
     for (chain_i = 0; chain_i < num_chains; chain_i++) {
         chains->chains[chain_i].start = chains_mini_havege();
         chains->chains[chain_i].end   = chains->chains[chain_i].start;
@@ -180,7 +178,7 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
 
     printf("false finds: %d\n", false_finds);
 
-    return "not found";
+    return NULL;
 }
 
 

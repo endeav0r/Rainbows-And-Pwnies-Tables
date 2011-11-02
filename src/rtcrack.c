@@ -35,6 +35,7 @@ int main (int argc, char * argv[])
     char * filename = NULL;
     int    plaintext_length = -1;
     int    hash_type = 0;
+    char * found;
     
     while ((c = getopt(argc, argv, "c:f:p:ht:")) != -1) {
         switch (c) {
@@ -86,7 +87,12 @@ int main (int argc, char * argv[])
     printf("%lld chains of length %d\n",
            (long long int) chains->num_chains, chains->length);
     printf("searching chains\n");fflush(stdout);
-    printf("%s\n", chains_search(chains, hash, plaintext, argv[optind]));
+
+    found = chains_search(chains, hash, plaintext, argv[optind]);
+    if (found == NULL)
+        printf("plaintext not found\n");
+    else
+        printf("plaintext found: %s\n", found);
 
     hash_destroy(hash);
     plaintext_destroy(plaintext);
