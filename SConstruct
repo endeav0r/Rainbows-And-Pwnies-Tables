@@ -16,6 +16,10 @@ env.Program(target="rtcrack",
             source=sources_c + ['src/rtcrack.c'],
            )
 
+env.Program(target="rtextend",
+            source=sources_c + ['src/rtextend.c'],
+           )
+
 env.Program(target="rtmerge",
             source=sources_c + ['src/rtmerge.c'],
            )
