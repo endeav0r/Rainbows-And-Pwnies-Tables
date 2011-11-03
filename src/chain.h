@@ -28,8 +28,11 @@ void   chains_sort     (_chains * chains);
 char * chains_search   (_chains * chains, _hash * hash, _plaintext * plaintext, char * hash_string);
 void   chains_perfect  (_chains * chains);
 
-int       chains_write (_chains * chains, char * filename);
-_chains * chains_read  (char * filename);
+int       chains_write        (_chains * chains, char * filename);
+_chains * chains_read         (char * filename);
+_chains * chains_read_header  (char * filename);
+int       chains_read_append  (_chains * chains, char * filename);
+
 
 int         chain_generate (_chain * chain, int start_index, int length, _hash * hash, _plaintext * plaintext);
 char *      chain_search   (_chain * chain, int length, _hash * hash, _plaintext * plaintext, uint64_t needle);

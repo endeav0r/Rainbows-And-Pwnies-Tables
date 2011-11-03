@@ -18,6 +18,7 @@ _plaintext * plaintext_create (char * charset, int plaintext_length)
     plaintext->charset = (char *) malloc(plaintext->charset_length + 1);
     strcpy(plaintext->charset, charset);
     memset(plaintext->plaintext, 0, PLAINTEXT_MAX_LEN + 1);
+    plaintext->fast_d = libdivide_u64_gen(plaintext->charset_length);
 
     return plaintext;
 }
@@ -38,11 +39,10 @@ _plaintext * plaintext_copy (_plaintext * src)
 
     dst->charset_length = src->charset_length;
     dst->plaintext_length = src->plaintext_length;
-    
     dst->charset = (char *) malloc(dst->charset_length);
     memcpy(dst->charset, src->charset, dst->charset_length);
-
     memcpy(dst->plaintext, src->plaintext, PLAINTEXT_MAX_LEN + 1);
+    dst->fast_d = libdivide_u64_gen(dst->charset_length);
 
     return dst;
 }
@@ -60,35 +60,14 @@ char * plaintext_gen (_plaintext * plaintext, uint64_t seed)
     char * charset = plaintext->charset;
     char * text = plaintext->plaintext;
 
-/*
-    if ((plaintext_length < 11) && (charset_length < 64)) {
-        diff = 0x3f % charset_length;
-        for (i = 0; i < plaintext_length; i++) {
-            mod = seed & 0x3f;
-            mod -= diff;
-            if (mod >= 0x40)
-                mod = seed % charset_length;
-            else {
-                while (mod > charset_length - 1)
-                    mod -= charset_length;
-            }
-            text[pi++] = charset[mod];
-            seed >>= 6;
-            if (seed == 0)
-                break;
-        }
-    }
-    else {
-*/
     for (i = 0; i < plaintext_length; i++) {
         // division is *really* slow, so we do it just once
-        div = seed / charset_length;
+        div = libdivide_u64_do(seed, &(plaintext->fast_d));
         text[pi++] = charset[seed - (charset_length * div)];
         seed = div;
         if (seed == 0)
             break;
     }
-//  } 
 
     text[pi] = '\0';
 

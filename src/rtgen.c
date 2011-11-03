@@ -121,7 +121,7 @@ int main (int argc, char * argv[])
     }
     else {
         chains_generate(chains, chain_length, hash, plaintext);
-        //chains_perfect(chains);
+        chains_perfect(chains);
     }
 
     printf("final chains sort\n");

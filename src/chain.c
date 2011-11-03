@@ -68,7 +68,8 @@ _chains * chains_create (uint64_t num_chains)
 
 void chains_destroy (_chains * chains)
 {
-    free(chains->chains);
+    if (chains->chains != NULL)
+        free(chains->chains);
     free(chains);
 }
 
@@ -170,6 +171,7 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
             text = chain_search(&(chains->chains[chain_i]), chains->length, hash, plaintext, needle_index);
             if (text != NULL) {
                 printf("\n");
+                free(search_chains);
                 return text;
             }
             printf(".");
@@ -178,6 +180,7 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
 
     printf("false finds: %d\n", false_finds);
 
+    free(search_chains);
     return NULL;
 }
 
@@ -262,6 +265,72 @@ _chains * chains_read (char * filename)
 }
 
 
+_chains * chains_read_header (char * filename)
+{
+    _chains * chains;
+    FILE * fh;
+
+    fh = fopen(filename, "rb");
+    if (fh == NULL)
+        return NULL;
+
+    chains = (_chains *) malloc(sizeof(_chains));
+
+    fread(&(chains->num_chains), sizeof(uint64_t), 1, fh);
+    fread(&(chains->length), sizeof(int), 1, fh);
+
+    fclose(fh);
+    
+    chains->chains = NULL;
+
+    return chains;
+}
+
+
+int chains_read_append (_chains * chains, char * filename)
+{
+    _chains chains_tmp;
+    FILE * fh;
+    uint64_t i;
+
+    fh = fopen(filename, "rb");
+    if (fh == NULL)
+        return -1;
+
+    fseek(fh, 0, SEEK_SET);
+
+    fread(&(chains_tmp.num_chains), sizeof(uint64_t), 1, fh);
+    fread(&(chains_tmp.length), sizeof(int), 1, fh);
+
+    if (chains_tmp.length != chains->length)
+        return -1;
+    
+    chains_tmp.chains = (_chain *) realloc(chains->chains, sizeof(_chain)
+                                           * (chains->num_chains + chains_tmp.num_chains));
+    if (chains_tmp.chains == NULL) {
+        fprintf(stderr, "chains_read_append realloc fail\n");
+        return -1;
+    }
+    printf("realloc %p %p\n", chains->chains, chains_tmp.chains);
+    chains->chains = chains_tmp.chains;
+
+    printf("appending %lld chains to %lld chains\n",
+           (long long unsigned int) chains_tmp.num_chains,
+           (long long unsigned int) chains->num_chains);
+
+    for (i = chains->num_chains; i < chains->num_chains + chains_tmp.num_chains; i++) {
+        fread(&(chains->chains[i].start), sizeof(uint64_t), 1, fh);
+        fread(&(chains->chains[i].end), sizeof(uint64_t), 1, fh);
+    }
+    
+    fclose(fh);
+
+    chains->num_chains += chains_tmp.num_chains;
+
+    return 0;
+}
+
+
 int chain_generate (_chain * chain, int start_length, int length, _hash * hash, _plaintext * plaintext)
 {
     int length_i;
@@ -323,7 +392,7 @@ uint64_t chain_partition (_chain * chain, uint64_t left, uint64_t right, uint64_
     chain_swap(&(chain[right]), &(chain[pivot_index]));
     store_index = left;
 
-    for (i = left; i < right; i++) {
+    for (i = left; i < right - 1; i++) {
         if (chain[i].end < pivot_value) {
             chain_swap(&(chain[i]), &(chain[store_index]));
             store_index++;
@@ -338,13 +407,13 @@ void chain_sort (_chain * chain, uint64_t left, uint64_t right)
 {
     uint64_t pivot_index;
     
-    if ((left >= right) || ((int64_t) right < 0))
+    if (left >= right)
         return;
 
     pivot_index = (right + left) / 2;
 
     pivot_index = chain_partition(chain, left, right, pivot_index);
-
-    chain_sort(chain, left, pivot_index - 1);
+    if (pivot_index != 0)
+        chain_sort(chain, left, pivot_index - 1);
     chain_sort(chain, pivot_index + 1, right);
 }

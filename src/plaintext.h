@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "libdivide.h"
+
 #define PLAINTEXT_MAX_LEN 32
 
 typedef struct _plaintext_s {
@@ -10,6 +12,7 @@ typedef struct _plaintext_s {
     int plaintext_length;
     char * charset;
     char plaintext[PLAINTEXT_MAX_LEN + 1];
+    struct libdivide_u64_t fast_d;
 } _plaintext;
 
 
