@@ -54,7 +54,7 @@ char * plaintext_gen (_plaintext * plaintext, uint64_t seed)
 {
     int i;
     int pi = 0;
-    uint64_t div;//, mod, diff;
+    uint64_t div;
     uint64_t plaintext_length = plaintext->plaintext_length;
     uint64_t charset_length = plaintext->charset_length;
     char * charset = plaintext->charset;

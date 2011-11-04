@@ -79,6 +79,8 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
     int num_threads;
     int i;
     uint64_t chunk;
+    uint64_t notify;
+    uint64_t notify_count;
     int * threads_running;
     pthread_t * threads;
     _chains_thread_generate * ctgs;
@@ -107,6 +109,8 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
         threads_running[i]      = 0;
     }
 
+    notify = 0;
+    notify_count = 0;
     for (chunk = 0; chunk < chains->num_chains; chunk += CHAINS_THREAD_CHUNK) {
         i = 0;
         while (i < num_threads) {
@@ -116,6 +120,13 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
                 ctgs[i].index_end   = ((chunk + CHAINS_THREAD_CHUNK) < chains->num_chains)
                                       ? chunk + CHAINS_THREAD_CHUNK : chains->num_chains;
                 pthread_create(&(threads[i]), NULL, chains_thread_generate, &(ctgs[i]));
+                notify += CHAINS_THREAD_CHUNK;
+                if (notify > CHAINS_GENERATE_NOTIFY) {
+                    printf("generating chain %lld of %lld\n",
+                           (long long unsigned int) (notify * notify_count++),
+                           (long long unsigned int) chains->num_chains);
+                    notify = 0;
+                }
                 break;
             }
             i++;
