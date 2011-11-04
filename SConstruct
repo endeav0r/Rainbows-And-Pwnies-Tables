@@ -1,7 +1,7 @@
 env = Environment()
 
-env.AppendUnique(CFLAGS=['-O3', '-Wall', '-fopenmp', '-Wno-unused-function'])
-env.AppendUnique(LINKFLAGS=['-fopenmp'])
+env.AppendUnique(CFLAGS=['-O2', '-Wall', '-pthread', '-Wno-unused-function'])
+env.AppendUnique(LINKFLAGS=['-pthread'])
 
 src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash']
 

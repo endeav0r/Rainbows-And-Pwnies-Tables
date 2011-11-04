@@ -100,33 +100,11 @@ uint64_t hash_index(_hash * hash)
 
     index = 0;
 
-    for (i = 0; i < hash->sum_size; i++) {
-        switch (i & 7) {
-        case 0 :
-            index ^= (uint64_t) hash->sum[i];
-            break;
-        case 1 :
-            index ^= ((uint64_t ) hash->sum[i]) << 8;
-            break;
-        case 2 :
-            index ^= ((uint64_t ) hash->sum[i]) << 16;
-            break;
-        case 3 :
-            index ^= ((uint64_t ) hash->sum[i]) << 24;
-            break;
-        case 4 :
-            index ^= ((uint64_t ) hash->sum[i]) << 32;
-            break;
-        case 5 :
-            index ^= ((uint64_t ) hash->sum[i]) << 40;
-            break;
-        case 6 :
-            index ^= ((uint64_t ) hash->sum[i]) << 48;
-            break;
-        case 7 :
-            index ^= ((uint64_t ) hash->sum[i]) << 56;
-            break;
-        }
+    for (i = 0; i < (hash->sum_size >> 2); i++) {
+        if (i & 1)
+            index ^= *((uint64_t *) &(hash->sum[i << 2]));
+        else
+            index ^= *((uint64_t *) &(hash->sum[i << 2])) << 32;
     }
 
     return index;
