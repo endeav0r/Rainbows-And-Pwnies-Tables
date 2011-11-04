@@ -2,6 +2,7 @@
 
 #include "md4.h"
 #include "md5.h"
+#include "nt.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +23,9 @@ _hash * hash_create (int hash_type)
         hash->sum_size = 16;
         hash->hash_func = md5_hash;
         break;
+    case HASH_NT :
+        hash->sum_size = 16;
+        hash->hash_func = nt_hash;
     default :
         fprintf(stderr, "invalid hash type. enjoy the crash.\n");
         break;

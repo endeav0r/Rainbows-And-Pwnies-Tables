@@ -25,6 +25,7 @@ void print_help ()
     printf("hash types:\n");
     printf("  1   MD4\n");
     printf("  2   MD5\n");
+    printf("  3   NT\n");
     printf("\n");
     printf("optional arguments\n");
     printf("  -d  <int>     chain length interval to remove duplicates\n");

@@ -5,6 +5,7 @@
 
 #define HASH_MD4 1
 #define HASH_MD5 2
+#define HASH_NT  3
 
 #define HASH_SUM_MAX_SIZE 64
 #define HASH_FUNC void (* hash_func) (unsigned char * sum, unsigned char * data, int data_size)

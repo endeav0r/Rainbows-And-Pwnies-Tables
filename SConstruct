@@ -3,7 +3,7 @@ env = Environment()
 env.AppendUnique(CFLAGS=['-O3', '-Wall', '-fopenmp', '-Wno-unused-function'])
 env.AppendUnique(LINKFLAGS=['-fopenmp'])
 
-src_c     = ['md5', 'md4', 'plaintext', 'chain', 'hash']
+src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash']
 
 sources_c =  map(lambda x: 'src/' + x + '.c', src_c)
 
