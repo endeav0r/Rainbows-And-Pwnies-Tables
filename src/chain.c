@@ -56,7 +56,7 @@ _chains * chains_create (uint64_t num_chains)
     for (chain_i = 0; chain_i < num_chains; chain_i++) {
         chains->chains[chain_i].start = chains_mini_havege();
         chains->chains[chain_i].end   = chains->chains[chain_i].start;
-        if (chain_i % 0x80000 == 0)
+        if (chain_i & 0x8ffff == 0x80000)
             printf("seeded %lld of %lld chains\n",
                    (unsigned long long) chain_i,
                    (unsigned long long) num_chains);
