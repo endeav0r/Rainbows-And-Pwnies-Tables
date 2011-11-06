@@ -150,8 +150,9 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
 
     // wait for all threads to finish
     for (i = 0; i < num_threads; i++) {
-        if (threads_running[i])
-            pthread_join(threads[i], NULL);
+        // threads are no longer joinable, so wait for them to die
+        while (threads_running[i])
+            nanosleep(&ts, &ts_rem);
         hash_destroy(ctgs[i].hash);
         plaintext_destroy(ctgs[i].plaintext);
     }
