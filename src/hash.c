@@ -26,8 +26,9 @@ _hash * hash_create (int hash_type)
     case HASH_NT :
         hash->sum_size = 16;
         hash->hash_func = nt_hash;
+        break;
     default :
-        fprintf(stderr, "invalid hash type. enjoy the crash.\n");
+        fprintf(stderr, "invalid hash type %d. enjoy the crash.\n", hash_type);
         break;
     }
 

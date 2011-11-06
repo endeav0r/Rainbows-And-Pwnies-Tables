@@ -23,12 +23,16 @@ _plaintext * plaintext_create (char * charset, int plaintext_length)
     plaintext->index_bits = (int) (log(strlen(charset)) / log(2)) + 1; // for future use
 
     if ((plaintext->charset_length & (plaintext->charset_length - 1)) == 0) {
+        printf("charset is power of 2. speeding up plaintext division.\n");
         plaintext->pow2div = 1;
         while (1 << plaintext->pow2div != plaintext->charset_length)
             plaintext->pow2div++;
     }
-    else
+    else {
+        printf("charset length %d not power of 2. using *slower* division\n",
+               plaintext->charset_length);
         plaintext->pow2div = 0;
+    }
 
     return plaintext;
 }

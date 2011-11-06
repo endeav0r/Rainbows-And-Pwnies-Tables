@@ -90,6 +90,7 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
     uint64_t notify_count;
     int * threads_running;
     pthread_t * threads;
+    pthread_attr_t thread_attr;
     _chains_thread_generate * ctgs;
     struct timespec ts, ts_rem;
 
@@ -101,6 +102,9 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
 
     // init global thread data
     num_threads = get_nprocs();
+
+    pthread_attr_init(&thread_attr);
+    pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 
     ctgs    = (_chains_thread_generate *) malloc(sizeof(_chains_thread_generate) * num_threads);
     threads = (pthread_t *) malloc(sizeof(pthread_t) * num_threads);
@@ -126,7 +130,7 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
                 ctgs[i].index_start = chunk;
                 ctgs[i].index_end   = ((chunk + CHAINS_THREAD_CHUNK) < chains->num_chains)
                                       ? chunk + CHAINS_THREAD_CHUNK : chains->num_chains;
-                pthread_create(&(threads[i]), NULL, chains_thread_generate, &(ctgs[i]));
+                pthread_create(&(threads[i]), &thread_attr, chains_thread_generate, &(ctgs[i]));
                 notify += CHAINS_THREAD_CHUNK;
                 if (notify > CHAINS_GENERATE_NOTIFY) {
                     printf("generating chain %lld of %lld\n",
