@@ -11,8 +11,10 @@
 #define CHAINS_GENERATE_NOTIFY 0x10000
 
 typedef struct _chain_s {
-    uint64_t start;
-    uint64_t end;
+    uint64_t start_0;
+    uint64_t start_1;
+    uint64_t end_0;
+    uint64_t end_1;
 } _chain;
 
 typedef struct _chains_s {
@@ -51,7 +53,10 @@ int       chains_read_append  (_chains * chains, char * filename);
 
 
 int         chain_generate (_chain * chain, int start_index, int length, _hash * hash, _plaintext * plaintext);
-char *      chain_search   (_chain * chain, int length, _hash * hash, _plaintext * plaintext, uint64_t needle);
+char *      chain_search   (_chain * chain, int length, _hash * hash, _plaintext * plaintext,
+                            uint64_t needle_0, uint64_t needle_1);
+
+int         chain_cmp      (_chain * a, _chain * b);
 inline void chain_swap     (_chain * a, _chain * b);
 void        chain_sort     (_chain * chain, uint64_t left, uint64_t right);
 

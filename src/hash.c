@@ -88,24 +88,35 @@ int hash_from_string (_hash * hash, char * string)
         hash->sum[i/2] |= (char) low;
     }
 
+    for (i = 0; i < strlen(string) / 2; i++) {
+        printf("%02x", hash->sum[i]);
+    }
+
+    printf("\n");
+
     return 0;
 }
-        
+       
 
-
-uint64_t hash_index(_hash * hash)
+uint64_t hash_index_0 (_hash * hash)
 {
     uint64_t index;
-    int i;
 
-    index = 0;
+    index  = *((uint64_t *) &(hash->sum[0])) & 0x00000000ffffffff;
+    index |= *((uint64_t *) &(hash->sum[4])) << 32;
 
-    for (i = 0; i < (hash->sum_size >> 2); i++) {
-        if (i & 1)
-            index ^= *((uint64_t *) &(hash->sum[i << 2]));
-        else
-            index ^= *((uint64_t *) &(hash->sum[i << 2])) << 32;
-    }
+    return index;
+}
+
+
+uint64_t hash_index_1 (_hash * hash)
+{
+    uint64_t index;
+
+    return 0;
+
+//    index  = *((uint64_t *) &(hash->sum[ 8])) & 0x00000000ffffffff;
+//    index |= *((uint64_t *) &(hash->sum[12])) << 32;
 
     return index;
 }

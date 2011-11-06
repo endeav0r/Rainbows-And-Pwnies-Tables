@@ -1,7 +1,7 @@
 env = Environment()
 
-env.AppendUnique(CFLAGS=['-O3', '-Wall', '-pthread', '-Wno-unused-function'])
-env.AppendUnique(LINKFLAGS=['-pthread'])
+env.AppendUnique(CFLAGS=['-O2', '-Wall', '-pthread', '-Wno-unused-function', '-fno-strict-aliasing'])
+env.AppendUnique(LINKFLAGS=['-pthread', '-lm'])
 
 src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash']
 
@@ -11,9 +11,12 @@ env.Program(target="rtgen",
             source=sources_c + ['src/rtgen.c'],
            )
 
-
 env.Program(target="rtcrack",
             source=sources_c + ['src/rtcrack.c'],
+           )
+
+env.Program(target="rtprint",
+            source=sources_c + ['src/rtprint.c'],
            )
 
 env.Program(target="rtinfo",

@@ -1,0 +1,53 @@
+Rainbows-And-Pwnies-Tables
+
+README Last Update 06 NOV 2011
+
+endeavor at rainbowsandpwnies dot com
+
+/**********
+* WARNING *
+**********/
+
+The format for the rainbow tables has not yet been finalized. If you generate tables, there is a good chance you will not be able to use them with future revisions of Rainbows-And-Pwnies-Tables.
+
+If you're looking to generate large tables, either pick another rainbow tables implementation or wait for this format to stabilize.
+
+/**************
+* DESCRIPTION *
+**************/
+
+This implementation of rainbow tables has been specifically engineered to take advantage of a few discoveries in rainbow tables. While I'm not going to go into the specifics here, a few things you should know about these tables:
+
+    - 128-bit indexes
+    - Incremental construction of perfect rainbow tables, removing merges during generation.
+
+Other features:
+    - Threaded. Automatically uses all available CPUs.
+    - NT(LM), MD4 and MD5 hashes
+
+/***************
+* REQUIREMENTS *
+***************/
+
+scons
+    http://www.scons.org/
+
+Uses pthread (POSIX Threads). I'm not sure how Windows users will fare.
+
+/********
+* USAGE *
+********/
+
+// TABLE GENERATION
+rtgen -c abcdefghijklmnopqrstuvwxyz -f loweralpha5_nt.chains -l 2000 -p 5 -n 100000 -t 3 -d 200
+
+// HASH CRACKING
+rtcrack -c abcdefghijklmnopqrstuvwxyz -f loweralpha5_nt.chains -p 5 -t 3 bfd34579544f3f2faf0ece6dc4d24649
+
+// TOOLS AVAILABLE
+rtcrack  - crack a hash with existing rainbow tables
+rtextend - extend an existing rainbow table to a new length
+rtgen    - generate a new rainbow tables
+rtinfo   - print info about a rainbow table
+rtmerge  - merge two rainbow tables together
+rtprint  - print the chains in a rainbow table (for debugging)

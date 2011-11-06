@@ -120,10 +120,8 @@ int main (int argc, char * argv[])
             chains_perfect(chains);
         }
     }
-    else {
+    else 
         chains_generate(chains, chain_length, hash, plaintext);
-        chains_perfect(chains);
-    }
 
     printf("final chains sort\n");
     chains_sort(chains);
