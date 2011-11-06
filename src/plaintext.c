@@ -20,7 +20,15 @@ _plaintext * plaintext_create (char * charset, int plaintext_length)
     strcpy(plaintext->charset, charset);
     memset(plaintext->plaintext, 0, PLAINTEXT_MAX_LEN + 1);
     plaintext->fast_d = libdivide_u64_gen(plaintext->charset_length);
-    plaintext->index_bits = (int) (log(strlen(charset)) / log(2)) + 1;
+    plaintext->index_bits = (int) (log(strlen(charset)) / log(2)) + 1; // for future use
+
+    if ((plaintext->charset_length & (plaintext->charset_length - 1)) == 0) {
+        plaintext->pow2div = 1;
+        while (1 << plaintext->pow2div != plaintext->charset_length)
+            plaintext->pow2div++;
+    }
+    else
+        plaintext->pow2div = 0;
 
     return plaintext;
 }
@@ -46,6 +54,7 @@ _plaintext * plaintext_copy (_plaintext * src)
     memcpy(dst->plaintext, src->plaintext, PLAINTEXT_MAX_LEN + 1);
     dst->fast_d = libdivide_u64_gen(dst->charset_length);
     dst->index_bits = src->index_bits;
+    dst->pow2div = src->pow2div;
 
     return dst;
 }
@@ -56,6 +65,7 @@ _plaintext * plaintext_copy (_plaintext * src)
 char * plaintext_gen (_plaintext * plaintext, uint64_t seed_0, uint64_t seed_1)
 {
     int i;
+    int pow2div = plaintext->pow2div;
     int pi = 0;
     uint64_t div;
     uint64_t plaintext_length = plaintext->plaintext_length;
@@ -64,8 +74,11 @@ char * plaintext_gen (_plaintext * plaintext, uint64_t seed_0, uint64_t seed_1)
     char * text = plaintext->plaintext;
 
     for (i = 0; i < plaintext_length; i++) {
-        // division is *really* slow, so we do it just once
-        div = libdivide_u64_do(seed_0, &(plaintext->fast_d));
+        if (pow2div)
+            div = seed_0 >> pow2div;
+        else
+            // division is *really* slow, so we do it just once
+            div = libdivide_u64_do(seed_0, &(plaintext->fast_d));
         text[pi++] = charset[seed_0 - (charset_length * div)];
         seed_0 = div;
         if (seed_0 < charset_length)

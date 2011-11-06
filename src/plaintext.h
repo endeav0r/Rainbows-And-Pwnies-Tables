@@ -13,10 +13,9 @@ typedef struct _plaintext_s {
     int    plaintext_length;
     char * charset;
     char   plaintext[PLAINTEXT_MAX_LEN + 1];
-
     struct libdivide_u64_t fast_d;
+    int    pow2div;
 } _plaintext;
-
 
 _plaintext * plaintext_create  (char * charset, int plaintext_length);
 void         plaintext_destroy (_plaintext * plaintext);

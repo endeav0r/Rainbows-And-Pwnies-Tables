@@ -28,6 +28,7 @@ void print_help ()
     printf("  3   NT\n");
     printf("\n");
     printf("optional arguments\n");
+    printf("  -b            benchmark. won't write chains or do intensive seeds\n");
     printf("  -d  <int>     chain length interval to remove duplicates\n");
     printf("  -h            this help message\n");
 }
@@ -46,10 +47,14 @@ int main (int argc, char * argv[])
     int      chain_length = -1;
     int      chain_duplicates = 0;
     int      hash_type = 0;
+    int      benchmark = 0;
     int      i;
 
-    while ((c = getopt(argc, argv, "c:d:f:hl:n:p:t:")) != -1) {
+    while ((c = getopt(argc, argv, "bc:d:f:hl:n:p:t:")) != -1) {
         switch (c) {
+        case 'b' :
+            benchmark = 1;
+            break;
         case 'c' :
             charset = optarg;
             break;
@@ -105,12 +110,16 @@ int main (int argc, char * argv[])
     hash      = hash_create(hash_type);
     plaintext = plaintext_create(charset, plaintext_length);
 
-    printf("creating chains. seeding random chain starts\n");
+    printf("creating chains\n");
     chains    = chains_create (num_chains);
-    printf("sorting seeded chains and removing duplicates\n");
-    chains_perfect(chains);
-    printf("%lld chains after initial seeding\n",
-           (long long int) chains->num_chains);
+    if (benchmark == 0) {
+        printf("seeding chains\n");
+        chains_seed(chains);
+        printf("sorting seeded chains and removing duplicates\n");
+        chains_perfect(chains);
+        printf("%lld chains after initial seeding\n",
+            (long long int) chains->num_chains);
+    }
 
     if (chain_duplicates > 0) {
         for (i = 1; i * chain_duplicates <= chain_length; i++) {
@@ -123,12 +132,15 @@ int main (int argc, char * argv[])
     else 
         chains_generate(chains, chain_length, hash, plaintext);
 
-    printf("final chains sort\n");
-    chains_sort(chains);
-
     printf("final chain count: %lld\n", (unsigned long long int) chains->num_chains);
-    printf("writing chains\n");
-    chains_write(chains, filename);
+
+    if (benchmark == 0) {
+        printf("final chains sort\n");
+        chains_sort(chains);
+
+        printf("writing chains\n");
+        chains_write(chains, filename);
+    }
 
     hash_destroy(hash);
     plaintext_destroy(plaintext);

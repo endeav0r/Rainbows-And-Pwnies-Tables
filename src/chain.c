@@ -42,7 +42,6 @@ uint64_t chains_mini_havege ()
 
 _chains * chains_create (uint64_t num_chains)
 {
-    uint64_t chain_i;
     _chains * chains;
     
     chains = (_chains *) malloc(sizeof(_chains));
@@ -51,9 +50,17 @@ _chains * chains_create (uint64_t num_chains)
 
     chains->chains = (_chain *) malloc(sizeof(_chain) * num_chains);
 
+    return chains;
+}
+
+
+void chains_seed (_chains * chains)
+{
+    uint64_t chain_i;
+
     chains_mini_havege_init();
 
-    for (chain_i = 0; chain_i < num_chains; chain_i++) {
+    for (chain_i = 0; chain_i < chains->num_chains; chain_i++) {
         chains->chains[chain_i].start_0 = chains_mini_havege();
         chains->chains[chain_i].start_1 = chains_mini_havege();
         chains->chains[chain_i].end_0   = chains->chains[chain_i].start_0;
@@ -61,10 +68,8 @@ _chains * chains_create (uint64_t num_chains)
         if ((chain_i & 0x8ffff) == 0x80000)
             printf("seeded %lld of %lld chains\n",
                    (unsigned long long) chain_i,
-                   (unsigned long long) num_chains);
+                   (unsigned long long) chains->num_chains);
     }
-
-    return chains;
 }
 
 

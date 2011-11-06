@@ -39,6 +39,7 @@ uint64_t chains_mini_havege();
 _chains * chains_create  (uint64_t num_chains);
 void      chains_destroy (_chains * chains);
 
+void   chains_seed     (_chains * chains);
 int    chains_generate (_chains * chains, int length, _hash * hash, _plaintext * plaintext);
 void   chains_sort     (_chains * chains);
 char * chains_search   (_chains * chains, _hash * hash, _plaintext * plaintext, char * hash_string);
