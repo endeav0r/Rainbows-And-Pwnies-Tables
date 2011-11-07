@@ -1,0 +1,27 @@
+markov files are ascii files with the following format
+
+        model_size
+<-------------------------->
+[first character occurences]
+[key character 0][following character occurences]
+[key character 1][following character occurences]
+                 <------------------------------>
+                             model_size
+
+lines are separated by '\n' ONLY
+
+model_size must be a power of 2
+
+character occurences are strings of characters that the markov engine can
+choose from when picking a character for that location
+
+for example, for first character occurences, if we had:
+
+AAAABBCD
+
+Our model could choose A,B,C or D. Because AAAA appears 4 times, our model
+will pick A half the time.
+
+If the frequence of characters following B was A*3, C*3, B*1 D*1 we would have
+a line that looked like this:
+BAAACCCBD
