@@ -108,10 +108,8 @@ uint64_t hash_index_1 (_hash * hash)
 {
     uint64_t index;
 
-    return 0;
-
-//    index  = *((uint64_t *) &(hash->sum[ 8])) & 0x00000000ffffffff;
-//    index |= *((uint64_t *) &(hash->sum[12])) << 32;
+    index  = *((uint64_t *) &(hash->sum[ 8])) & 0x00000000ffffffff;
+    index |= *((uint64_t *) &(hash->sum[12])) << 32;
 
     return index;
 }
