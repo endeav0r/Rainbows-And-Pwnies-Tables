@@ -135,6 +135,9 @@ int main (int argc, char * argv[])
         printf("%lld chains after initial seeding\n",
             (long long int) chains->num_chains);
     }
+    else
+        printf("benchmark, not seeding chains\n");
+    printf("chain generation complete\n");
 
     if (chain_duplicates > 0) {
         for (i = 1; i * chain_duplicates <= chain_length; i++) {
