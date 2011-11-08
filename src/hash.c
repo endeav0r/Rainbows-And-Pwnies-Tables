@@ -89,12 +89,6 @@ int hash_from_string (_hash * hash, char * string)
         hash->sum[i/2] |= (char) low;
     }
 
-    for (i = 0; i < strlen(string) / 2; i++) {
-        printf("%02x", hash->sum[i]);
-    }
-
-    printf("\n");
-
     return 0;
 }
        

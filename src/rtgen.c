@@ -8,19 +8,23 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define NUM_CHAINS 32
-
 void print_help ()
 {
-    printf("rtgen -<cflpn> -[dht]\n");
+    printf("rtgen -<cflmpnt> -[bdh]\n");
     printf("\n");
-    printf("required arguments\n");
+    printf("required arguments:\n");
     printf("  -c  <string>  character set\n");
     printf("  -f  <string>  filename to write chains to\n");
     printf("  -l  <int>     length of chains\n");
     printf("  -p  <int>     length of plaintext\n");
+    printf("  -m  <string>  markov model filename\n");
     printf("  -n  <int>     number of chains\n");
     printf("  -t  <int>     hash type\n");
+    printf("\n");
+    printf("plaintext types:\n");
+    printf("  passing -c will choose bruteforce plaintext generation\n");
+    printf("  passing -m will choose markov plaintext generation\n");
+    printf("  one and only of these options must be passed\n");
     printf("\n");
     printf("hash types:\n");
     printf("  1   MD4\n");
@@ -41,6 +45,7 @@ int main (int argc, char * argv[])
 
     int c;
     char *   charset = NULL;
+    char *   markov = NULL;
     char *   filename = NULL;
     int      plaintext_length = -1;
     uint64_t num_chains = 0;
@@ -50,7 +55,7 @@ int main (int argc, char * argv[])
     int      benchmark = 0;
     int      i;
 
-    while ((c = getopt(argc, argv, "bc:d:f:hl:n:p:t:")) != -1) {
+    while ((c = getopt(argc, argv, "bc:d:f:hl:m:n:p:t:")) != -1) {
         switch (c) {
         case 'b' :
             benchmark = 1;
@@ -66,6 +71,9 @@ int main (int argc, char * argv[])
             break;
         case 'p' :
             plaintext_length = atoi(optarg);
+            break;
+        case 'm' :
+            markov = optarg;
             break;
         case 'n' :
             num_chains = strtoull(optarg, NULL, 10);
@@ -85,30 +93,37 @@ int main (int argc, char * argv[])
         }
     }
 
-    if (charset == NULL)
-        fprintf(stderr, "must give charset.\n");
+    if ((charset == NULL) && (markov == NULL))
+        fprintf(stderr, "must give charset or markov model filename\n");
+    if ((charset != NULL) && (markov != NULL))
+        fprintf(stderr, "must give charset or markov model filename\n");
     if (filename == NULL)
         fprintf(stderr, "must give an output filename\n");
     if (plaintext_length == -1)
-        fprintf(stderr, "must give plaintext length.\n");
+        fprintf(stderr, "must give plaintext length\n");
     if (num_chains == 0)
         fprintf(stderr, "must give a number of chains\n");
     if (hash_type == 0)
         fprintf(stderr, "must give a hash type\n");
     if (chain_length == -1)
         fprintf(stderr, "must give a chain length\n");
-    if (    (charset == NULL)
-         || (plaintext_length == -1)
+    if (    (plaintext_length == -1)
          || (num_chains == 0)
          || (filename == NULL)
          || (hash_type == 0)
-         || (chain_length == -1)) {
+         || (chain_length == -1)
+         || ((charset == NULL) && (markov == NULL))
+         || ((charset != NULL) && (markov != NULL))) {
         fprintf(stderr, "use -h for help\n");
         return -1;
     }
 
-    hash      = hash_create(hash_type);
-    plaintext = plaintext_create(charset, plaintext_length);
+    hash = hash_create(hash_type);
+    printf("plaintext length: %d\n", plaintext_length);
+    if (charset != NULL)
+        plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
+    else 
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MARKOV, markov, plaintext_length);
 
     printf("creating chains\n");
     chains    = chains_create (num_chains);

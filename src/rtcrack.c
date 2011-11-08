@@ -8,13 +8,19 @@
 
 void print_help ()
 {
-    printf("rtgen -<cfp> -[h] <hash>\n");
+    printf("rtcrack -<cfmpt> -[h] <hash>\n");
     printf("\n");
-    printf("required arguments\n");
+    printf("required arguments:\n");
     printf("  -c  <string>  character set\n");
     printf("  -f  <string>  filename to read chains from\n");
+    printf("  -m  <string>  markov model filename\n");
     printf("  -p  <int>     length of plaintext\n");
     printf("  -t  <int>     hash type\n");
+    printf("\n");
+    printf("plaintext types:\n");
+    printf("  passing -c will choose bruteforce plaintext generation\n");
+    printf("  passing -m will choose markov plaintext generation\n");
+    printf("  one and only of these options must be passed\n");
     printf("\n");
     printf("hash types:\n");
     printf("  1   MD4\n");
@@ -33,18 +39,22 @@ int main (int argc, char * argv[])
 
     int c;
     char * charset = NULL;
+    char * markov = NULL;
     char * filename = NULL;
     int    plaintext_length = -1;
     int    hash_type = 0;
     char * found;
     
-    while ((c = getopt(argc, argv, "c:f:p:ht:")) != -1) {
+    while ((c = getopt(argc, argv, "c:f:m:p:ht:")) != -1) {
         switch (c) {
         case 'c' :
             charset = optarg;
             break;
         case 'f' :
             filename = optarg;
+            break;
+        case 'm' :
+            markov = optarg;
             break;
         case 'p' :
             plaintext_length = atoi(optarg);
@@ -61,8 +71,10 @@ int main (int argc, char * argv[])
         }
     }
 
-    if (charset == NULL)
-        fprintf(stderr, "must give charset.\n");
+    if ((charset == NULL) && (markov == NULL))
+        fprintf(stderr, "must give charset or markov model filename\n");
+    if ((charset != NULL) && (markov != NULL))
+        fprintf(stderr, "must give charset or markov model filename\n");
     if (filename == NULL)
         fprintf(stderr, "must give an output filename.\n");
     if (plaintext_length == -1)
@@ -71,17 +83,21 @@ int main (int argc, char * argv[])
         fprintf(stderr, "must give a hash type\n");
     if (optind >= argc)
         fprintf(stderr, "must give hash as argument.\n");
-    if (    (charset == NULL)
-         || (filename == NULL)
+    if (    (filename == NULL)
          || (plaintext_length == -1)
          || (hash_type == 0)
-         || (optind >= argc)) {
+         || (optind >= argc) 
+         || ((charset == NULL) && (markov == NULL))
+         || ((charset != NULL) && (markov != NULL))) {
         fprintf(stderr, "use -h for help\n");
         return -1;
     }
 
-    hash      = hash_create(hash_type);
-    plaintext = plaintext_create(charset, plaintext_length);
+    hash = hash_create(hash_type);
+    if (charset != NULL)
+        plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
+    else 
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MARKOV, markov, plaintext_length);
 
     chains = chains_read(filename);
 

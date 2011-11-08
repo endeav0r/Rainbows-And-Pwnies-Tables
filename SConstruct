@@ -1,11 +1,15 @@
 env = Environment()
 
-env.AppendUnique(CFLAGS=['-O3', '-Wall', '-pthread', '-Wno-unused-function', '-fno-strict-aliasing'])
+env.AppendUnique(CFLAGS=['-g', '-O2', '-Wall', '-pthread', '-Wno-unused-function', '-fno-strict-aliasing'])
 env.AppendUnique(LINKFLAGS=['-pthread', '-lm'])
 
-src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash']
+src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash', 'markov', 'bruteforce']
 
 sources_c =  map(lambda x: 'src/' + x + '.c', src_c)
+
+env.Program(target="markovgen",
+            source=sources_c + ['src/markovgen.c'],
+           )
 
 env.Program(target="rtgen",
             source=sources_c + ['src/rtgen.c'],

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-_plaintext * plaintext_create (char * charset, int plaintext_length)
+_plaintext * plaintext_create (int type, char * s, int plaintext_length)
 {
     _plaintext * plaintext;
 
@@ -14,24 +14,21 @@ _plaintext * plaintext_create (char * charset, int plaintext_length)
 
     plaintext = (_plaintext *) malloc(sizeof(_plaintext));
 
-    plaintext->charset_length = strlen(charset);
     plaintext->plaintext_length = plaintext_length;
-    plaintext->charset = (char *) malloc(plaintext->charset_length + 1);
-    strcpy(plaintext->charset, charset);
-    memset(plaintext->plaintext, 0, PLAINTEXT_MAX_LEN + 1);
-    plaintext->fast_d = libdivide_u64_gen(plaintext->charset_length);
-    plaintext->index_bits = (int) (log(strlen(charset)) / log(2)) + 1; // for future use
+    plaintext->type = type;
 
-    if ((plaintext->charset_length & (plaintext->charset_length - 1)) == 0) {
-        printf("charset is power of 2. speeding up plaintext division.\n");
-        plaintext->pow2div = 1;
-        while (1 << plaintext->pow2div != plaintext->charset_length)
-            plaintext->pow2div++;
-    }
-    else {
-        printf("charset length %d not power of 2. using *slower* division\n",
-               plaintext->charset_length);
-        plaintext->pow2div = 0;
+    switch (type) {
+    case PLAINTEXT_TYPE_BRUTEFORCE :
+        plaintext->p.bruteforce = bruteforce_create(s, plaintext_length);
+        plaintext->plaintext_gen = bruteforce_gen;
+        break;
+    case PLAINTEXT_TYPE_MARKOV :
+        plaintext->p.markov     = markov_create(s, plaintext_length);
+        plaintext->plaintext_gen = markov_gen;
+        break;
+    default :
+        fprintf(stderr, "invalid plaintext type\n");
+        return NULL;
     }
 
     return plaintext;
@@ -40,7 +37,14 @@ _plaintext * plaintext_create (char * charset, int plaintext_length)
 
 void plaintext_destroy (_plaintext * plaintext)
 {
-    free(plaintext->charset);
+    switch (plaintext->type) {
+    case PLAINTEXT_TYPE_BRUTEFORCE :
+        bruteforce_destroy(plaintext->p.bruteforce);
+        break;
+    case PLAINTEXT_TYPE_MARKOV :
+        markov_destroy(plaintext->p.markov);
+        break;
+    }
     free(plaintext);
 }
 
@@ -51,14 +55,18 @@ _plaintext * plaintext_copy (_plaintext * src)
 
     dst = (_plaintext *) malloc(sizeof(_plaintext));
 
-    dst->charset_length = src->charset_length;
     dst->plaintext_length = src->plaintext_length;
-    dst->charset = (char *) malloc(dst->charset_length);
-    memcpy(dst->charset, src->charset, dst->charset_length);
-    memcpy(dst->plaintext, src->plaintext, PLAINTEXT_MAX_LEN + 1);
-    dst->fast_d = libdivide_u64_gen(dst->charset_length);
-    dst->index_bits = src->index_bits;
-    dst->pow2div = src->pow2div;
+    dst->type             = src->type;
+    dst->plaintext_gen    = src->plaintext_gen;
+
+    switch (src->type) {
+    case PLAINTEXT_TYPE_BRUTEFORCE :
+        dst->p.bruteforce = bruteforce_copy(src->p.bruteforce);
+        break;
+    case PLAINTEXT_TYPE_MARKOV :
+        dst->p.markov = markov_copy(src->p.markov);
+        break;
+    }
 
     return dst;
 }
@@ -68,26 +76,5 @@ _plaintext * plaintext_copy (_plaintext * src)
 // do whatever we can to make it faster
 char * plaintext_gen (_plaintext * plaintext, uint64_t seed_0, uint64_t seed_1)
 {
-    int i;
-    int pow2div = plaintext->pow2div;
-    int pi = 0;
-    uint64_t div;
-    uint64_t plaintext_length = plaintext->plaintext_length;
-    uint64_t charset_length = plaintext->charset_length;
-    char * charset = plaintext->charset;
-    char * text = plaintext->plaintext;
-
-    for (i = 0; i < plaintext_length; i++) {
-        if (pow2div)
-            div = seed_0 >> pow2div;
-        else
-            // division is *really* slow, so we do it just once
-            div = libdivide_u64_do(seed_0, &(plaintext->fast_d));
-        text[pi++] = charset[seed_0 - (charset_length * div)];
-        seed_0 = div;
-        if (seed_0 < charset_length)
-            seed_0 = seed_1;
-    }
-
-    return text;
+    return plaintext->plaintext_gen(plaintext->p.p, seed_0, seed_1);
 }
