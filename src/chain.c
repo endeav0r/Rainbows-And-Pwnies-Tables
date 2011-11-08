@@ -134,7 +134,7 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
                 notify += CHAINS_THREAD_CHUNK;
                 if (notify > CHAINS_GENERATE_NOTIFY) {
                     printf("generating chain %lld of %lld\n",
-                           (long long unsigned int) (notify * notify_count++),
+                           (long long unsigned int) (notify * ++notify_count),
                            (long long unsigned int) chains->num_chains);
                     notify = 0;
                 }
@@ -416,8 +416,9 @@ int chain_generate (_chain * chain, int start_length, int length, _hash * hash, 
     index_0 = chain->end_0;
     index_1 = chain->end_1;
     for (length_i = start_length; length_i < length; length_i++) {
+        // call plaintext generation method directly
         hash_hash(hash, 
-                  (unsigned char *) plaintext_gen(plaintext, index_0, index_1),
+                  (unsigned char *) plaintext->plaintext_gen(plaintext->p.p, index_0, index_1),
                   plaintext->plaintext_length);
         index_0  = hash_index_0(hash);
         index_1  = hash_index_1(hash);
