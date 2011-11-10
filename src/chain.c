@@ -283,7 +283,7 @@ void chains_sort (_chains * chains)
 }
 
 
-void chains_sort_random_pivot (_chains * chains)
+void chains_sort_random (_chains * chains)
 {
     uint64_t i;
 
@@ -292,8 +292,7 @@ void chains_sort_random_pivot (_chains * chains)
         chain_swap(&(chains->chains[i]),
                    &(chains->chains[chains->chains[i].start_0 % chains->num_chains]));
 
-    chains_mini_havege_init();
-    chain_sort_random_pivot(chains->chains, 0, chains->num_chains - 1);
+    chain_sort (chains->chains, 0, chains->num_chains - 1);
 }
 
 
@@ -529,26 +528,6 @@ void chain_sort (_chain * chain, uint64_t left, uint64_t right)
         return;
 
     pivot_index = (right + left) / 2;
-
-    pivot_index = chain_partition(chain, left, right, pivot_index);
-    if (pivot_index != 0)
-        chain_sort(chain, left, pivot_index - 1);
-    chain_sort(chain, pivot_index + 1, right);
-}
-
-
-void chain_sort_random_pivot (_chain * chain, uint64_t left, uint64_t right)
-{
-    uint64_t pivot_index;
-
-    if (left >= right)
-        return;
-
-    pivot_index  = chains_mini_havege();
-    pivot_index %= right - left;
-    pivot_index += left;
-
-    printf("%lld %lld %lld\n", left, pivot_index, right);
 
     pivot_index = chain_partition(chain, left, right, pivot_index);
     if (pivot_index != 0)
