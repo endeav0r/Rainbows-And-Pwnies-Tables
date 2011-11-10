@@ -186,13 +186,6 @@ void * chains_thread_generate (void * ctg_thread_arg)
 }
 
 
-
-void chains_sort (_chains * chains)
-{
-    chain_sort(chains->chains, 0, chains->num_chains - 1);
-}
-
-
 char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, char * hash_string)
 {
     int depth;
@@ -260,8 +253,6 @@ void chains_perfect (_chains * chains)
 {
     uint64_t head, tail, swap;
 
-    chains_sort(chains);
-
     if (chains->num_chains <= 1)
         return;
 
@@ -283,6 +274,26 @@ void chains_perfect (_chains * chains)
     }
 
     chains->num_chains = swap + 1;
+}
+
+
+void chains_sort (_chains * chains)
+{
+    chain_sort(chains->chains, 0, chains->num_chains - 1);
+}
+
+
+void chains_sort_random_pivot (_chains * chains)
+{
+    uint64_t i;
+
+    // this is memory intensive, but we make up for it with faster quicksort later
+    for (i = 0; i < chains->num_chains; i++)
+        chain_swap(&(chains->chains[i]),
+                   &(chains->chains[chains->chains[i].start_0 % chains->num_chains]));
+
+    chains_mini_havege_init();
+    chain_sort_random_pivot(chains->chains, 0, chains->num_chains - 1);
 }
 
 
@@ -467,6 +478,7 @@ int  chain_cmp  (_chain * a, _chain * b)
     return 1;
 }
 
+
 inline void chain_swap (_chain * a, _chain * b)
 {
     if (a == b)
@@ -488,6 +500,7 @@ inline void chain_swap (_chain * a, _chain * b)
     a->end_1   ^= b->end_1;
 }
 
+
 uint64_t chain_partition (_chain * chain, uint64_t left, uint64_t right, uint64_t pivot_index)
 {
     uint64_t store_index;
@@ -507,6 +520,7 @@ uint64_t chain_partition (_chain * chain, uint64_t left, uint64_t right, uint64_
     return store_index;
 }
 
+
 void chain_sort (_chain * chain, uint64_t left, uint64_t right)
 {
     uint64_t pivot_index;
@@ -515,6 +529,26 @@ void chain_sort (_chain * chain, uint64_t left, uint64_t right)
         return;
 
     pivot_index = (right + left) / 2;
+
+    pivot_index = chain_partition(chain, left, right, pivot_index);
+    if (pivot_index != 0)
+        chain_sort(chain, left, pivot_index - 1);
+    chain_sort(chain, pivot_index + 1, right);
+}
+
+
+void chain_sort_random_pivot (_chain * chain, uint64_t left, uint64_t right)
+{
+    uint64_t pivot_index;
+
+    if (left >= right)
+        return;
+
+    pivot_index  = chains_mini_havege();
+    pivot_index %= right - left;
+    pivot_index += left;
+
+    printf("%lld %lld %lld\n", left, pivot_index, right);
 
     pivot_index = chain_partition(chain, left, right, pivot_index);
     if (pivot_index != 0)

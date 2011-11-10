@@ -44,6 +44,7 @@ int    chains_generate (_chains * chains, int length, _hash * hash, _plaintext *
 void   chains_sort     (_chains * chains);
 char * chains_search   (_chains * chains, _hash * hash, _plaintext * plaintext, char * hash_string);
 void   chains_perfect  (_chains * chains);
+void   chains_sort_random_pivot (_chains * chains);
 
 void * chains_thread_generate (void * ctg_thread_arg);
 
@@ -60,5 +61,6 @@ char *      chain_search   (_chain * chain, int length, _hash * hash, _plaintext
 int         chain_cmp      (_chain * a, _chain * b);
 inline void chain_swap     (_chain * a, _chain * b);
 void        chain_sort     (_chain * chain, uint64_t left, uint64_t right);
+void        chain_sort_random_pivot (_chain * chain, uint64_t left, uint64_t right);
 
 #endif

@@ -131,6 +131,7 @@ int main (int argc, char * argv[])
         printf("seeding chains\n");
         chains_seed(chains);
         printf("sorting seeded chains and removing duplicates\n");
+        chains_sort(chains);
         chains_perfect(chains);
         printf("%lld chains after initial seeding\n",
             (long long int) chains->num_chains);
@@ -144,6 +145,7 @@ int main (int argc, char * argv[])
             printf("expanding chains from %d to %d\n", chains->length, i * chain_duplicates);
             chains_generate(chains, chain_duplicates * i, hash, plaintext);
             printf("sorting and removing duplicates\n");
+            chains_sort(chains);
             chains_perfect(chains);
         }
     }

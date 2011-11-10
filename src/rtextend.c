@@ -132,11 +132,13 @@ int main (int argc, char * argv[])
             printf("expanding chains from %d to %d\n", chains->length, i * chain_duplicates);
             chains_generate(chains, chain_duplicates * i, hash, plaintext);
             printf("sorting and removing duplicates\n");
+            chains_sort(chains);
             chains_perfect(chains);
         }
     }
     else {
         chains_generate(chains, chain_length, hash, plaintext);
+        chains_sort(chains);
         chains_perfect(chains);
     }
 

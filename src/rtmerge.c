@@ -68,9 +68,10 @@ int main (int argc, char * argv[])
         return -1;
     }
 
-    printf("total of %lld chains, perfecting...\n", (long long unsigned int) chains_dst->num_chains);
+    printf("total of %lld chains, sorting...\n", (long long unsigned int) chains_dst->num_chains);
+    chains_sort_random_pivot(chains_dst);
 
-    // perfect chains
+    printf("perfecting...\n");
     chains_perfect(chains_dst);
 
     printf("dst has %lld chains, loss of %lld chains\n",
