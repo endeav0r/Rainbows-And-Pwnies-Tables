@@ -322,6 +322,44 @@ void chains_sort_random (_chains * chains)
 }
 
 
+// returns -1 if chain verification failed, 0 on success
+int chains_verify (_chains * chains, uint64_t chains_to_verify, _hash * hash, _plaintext * plaintext)
+{
+    uint64_t i;
+    uint64_t index;
+    _chain chain;
+
+    chain.end_0 = 0;
+    chain.end_1 = 0;
+
+    chains_mini_havege_init();
+
+    for (i = 0; i < chains_to_verify; i++) {
+        index = chains_mini_havege() % chains->num_chains;
+        chain.end_0 = chains->chains[index].start_0;
+        chain.end_1 = chains->chains[index].start_1;
+        chain_generate(&chain, 0, chains->length, hash, plaintext);
+        if (chain_cmp(&(chains->chains[index]), &chain)) {
+            printf("verification round "FLLD"\n", (unsigned long long int) i);
+            printf("index "FLLD"\n", (unsigned long long int) index);
+            printf("start    "F016LLX" "F016LLX"\n",
+                   (unsigned long long int) chains->chains[index].start_0,
+                   (unsigned long long int) chains->chains[index].start_1);
+            printf("execpted "F016LLX" "F016LLX"\n",
+                   (unsigned long long int) chains->chains[index].end_0,
+                   (unsigned long long int) chains->chains[index].end_1);
+            printf("received "F016LLX" "F016LLX"\n",
+                   (unsigned long long int) chain.end_0,
+                   (unsigned long long int) chain.end_1);
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+
+
 int chains_write (_chains * chains, char * filename)
 {
     uint64_t i;

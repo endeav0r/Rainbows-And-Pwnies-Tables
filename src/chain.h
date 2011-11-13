@@ -46,6 +46,7 @@ char * chains_search   (_chains * chains, _hash * hash, _plaintext * plaintext, 
 void   chains_perfect  (_chains * chains);
 void   chains_sort     (_chains * chains);
 void   chains_sort_random (_chains * chains);
+int    chains_verify   (_chains * chains, uint64_t chains_to_verify, _hash * hash, _plaintext * plaintext);
 
 void * chains_thread_generate (void * ctg_thread_arg);
 
