@@ -101,7 +101,7 @@ int main (int argc, char * argv[])
 
     chains = chains_read(filename);
 
-    printf("%lld chains of length %d\n",
+    printf(FLLD" chains of length %d\n",
            (long long int) chains->num_chains, chains->length);
     printf("searching chains\n");fflush(stdout);
 

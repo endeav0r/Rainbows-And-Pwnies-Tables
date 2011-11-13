@@ -55,8 +55,8 @@ int main (int argc, char * argv[])
         return -1;
     }
 
-    printf("src1 with %lld chains\n", (long long unsigned int) chains_src1->num_chains);
-    printf("src2 with %lld chains\n", (long long unsigned int) chains_src2->num_chains);
+    printf("src1 with "FLLD" chains\n", (long long unsigned int) chains_src1->num_chains);
+    printf("src2 with "FLLD" chains\n", (long long unsigned int) chains_src2->num_chains);
 
     // open src1 into dst, and then append src2
     if ((chains_dst = chains_read(filename_src1)) == NULL) {
@@ -68,13 +68,13 @@ int main (int argc, char * argv[])
         return -1;
     }
 
-    printf("total of %lld chains, sorting...\n", (long long unsigned int) chains_dst->num_chains);
+    printf("total of "FLLD" chains, sorting...\n", (long long unsigned int) chains_dst->num_chains);
     chains_sort_random(chains_dst);
 
     printf("perfecting...\n");
     chains_perfect(chains_dst);
 
-    printf("dst has %lld chains, loss of %lld chains\n",
+    printf("dst has "FLLD" chains, loss of "FLLD" chains\n",
            (long long unsigned int) chains_dst->num_chains,
            (long long unsigned int)
             ((chains_src1->num_chains + chains_src2->num_chains) - chains_dst->num_chains));

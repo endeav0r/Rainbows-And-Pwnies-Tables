@@ -40,7 +40,7 @@ int main (int argc, char * argv[])
 
     chains = chains_read_header(filename);
 
-    printf("%lld chains of length %d\n",
+    printf(FLLD" chains of length %d\n",
            (long long unsigned int) chains->num_chains,
            chains->length);
 

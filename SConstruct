@@ -1,6 +1,12 @@
-env = Environment()
 
-env.AppendUnique(CFLAGS=['-O3', '-Wall', '-pthread', '-Wno-unused-function', '-fno-strict-aliasing'])
+# mingw32
+#env = Environment(CC='i486-mingw32-gcc')
+#env.AppendUnique(CFLAGS=['-DMINGW', '-O3', '-Wall', '-Wno-unused-function', '-fno-strict-aliasing'])
+#env.AppendUnique(LINKFLAGS=['-DMINGW', '-lm'])
+
+# linux
+env = Environment()
+env.AppendUnique(CFLAGS=['-DUSE_THREADS', '-O3', '-Wall', '-pthread', '-Wno-unused-function', '-fno-strict-aliasing'])
 env.AppendUnique(LINKFLAGS=['-pthread', '-lm'])
 
 src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash', 'markov', 'bruteforce']

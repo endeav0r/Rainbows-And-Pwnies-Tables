@@ -41,12 +41,12 @@ int main (int argc, char * argv[])
 
     chains = chains_read(filename);
 
-    printf("%lld chains of length %d\n",
+    printf(FLLD " chains of length %d\n",
            (long long unsigned int) chains->num_chains,
            chains->length);
 
     for (i = 0; i < chains->num_chains; i++) {
-        printf("%016llx %016llx - %016llx  %016llx\n",
+        printf(F016LLX" "F016LLX" - "F016LLX" "F016LLX"\n",
                (long long unsigned int) chains->chains[i].start_0,
                (long long unsigned int) chains->chains[i].start_1,
                (long long unsigned int) chains->chains[i].end_0,

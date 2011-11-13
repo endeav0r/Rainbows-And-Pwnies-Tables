@@ -123,8 +123,8 @@ int main (int argc, char * argv[])
 
     printf("reading chains\n");
     chains    = chains_read (filename_in);
-    printf("%lld chains of length %d read\n",
-           (long long int) chains->num_chains,
+    printf(FLLD" chains of length %d read\n",
+           (unsigned long long int) chains->num_chains,
            chains->length);
 
     if (chain_duplicates > 0) {
@@ -146,7 +146,7 @@ int main (int argc, char * argv[])
     printf("final chains sort\n");
     chains_sort(chains);
 
-    printf("final chain count: %lld\n", (unsigned long long int) chains->num_chains);
+    printf("final chain count: "FLLD"\n", (unsigned long long int) chains->num_chains);
     printf("writing chains\n");
     chains_write(chains, filename_out);
 

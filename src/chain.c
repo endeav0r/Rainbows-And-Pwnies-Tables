@@ -2,8 +2,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/sysinfo.h>
 #include <time.h>
+#ifdef USE_THREADS
+#include <sys/sysinfo.h>
+#endif
 
 #define CHAINS_MH_SIZE 16 
 
@@ -66,9 +68,9 @@ void chains_seed (_chains * chains)
         chains->chains[chain_i].end_0   = chains->chains[chain_i].start_0;
         chains->chains[chain_i].end_1   = chains->chains[chain_i].start_1;
         if ((chain_i & 0x7ffff) == 0)
-            printf("seeded %lld of %lld chains\n",
-                   (unsigned long long) chain_i,
-                   (unsigned long long) chains->num_chains);
+            printf("seeded "FLLD" of "FLLD" chains\n",
+                   (long long unsigned int) chain_i,
+                   (long long unsigned int) chains->num_chains);
     }
 }
 
@@ -83,84 +85,103 @@ void chains_destroy (_chains * chains)
 
 int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * plaintext)
 {
-    int num_threads;
-    int i;
     uint64_t chunk;
     uint64_t notify;
     uint64_t notify_count;
-    int * threads_running;
-    pthread_t * threads;
-    pthread_attr_t thread_attr;
-    _chains_thread_generate * ctgs;
-    struct timespec ts, ts_rem;
+
+    #ifdef USE_THREADS
+        int i;
+        int num_threads;
+        int * threads_running;
+        pthread_t * threads;
+        pthread_attr_t thread_attr;
+        _chains_thread_generate * ctgs;
+        struct timespec ts, ts_rem;
+    #endif
 
     if (length <= chains->length)
         return -1;
 
-    ts.tv_sec = 0;
-    ts.tv_nsec = 10000;
+    #ifdef USE_THREADS
+        ts.tv_sec = 0;
+        ts.tv_nsec = 10000;
 
-    // init global thread data
-    num_threads = get_nprocs();
+        // init global thread data
+        num_threads = get_nprocs();
 
-    pthread_attr_init(&thread_attr);
-    pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
+        pthread_attr_init(&thread_attr);
+        pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 
-    ctgs    = (_chains_thread_generate *) malloc(sizeof(_chains_thread_generate) * num_threads);
-    threads = (pthread_t *) malloc(sizeof(pthread_t) * num_threads);
-    threads_running = (int *) malloc(sizeof(int) * num_threads);
+        ctgs    = (_chains_thread_generate *) malloc(sizeof(_chains_thread_generate) * num_threads);
+        threads = (pthread_t *) malloc(sizeof(pthread_t) * num_threads);
+        threads_running = (int *) malloc(sizeof(int) * num_threads);
 
-    // init data for each thread
-    for (i = 0; i < num_threads; i++) {
-        ctgs[i].chains         = chains;
-        ctgs[i].length         = length;
-        ctgs[i].hash           = hash_copy(hash);
-        ctgs[i].plaintext      = plaintext_copy(plaintext);
-        ctgs[i].thread_running = &(threads_running[i]);
-        threads_running[i]      = 0;
-    }
+        // init data for each thread
+        for (i = 0; i < num_threads; i++) {
+            ctgs[i].chains         = chains;
+            ctgs[i].length         = length;
+            ctgs[i].hash           = hash_copy(hash);
+            ctgs[i].plaintext      = plaintext_copy(plaintext);
+            ctgs[i].thread_running = &(threads_running[i]);
+            threads_running[i]      = 0;
+        }
+    #endif
 
     notify = 0;
     notify_count = 0;
-    for (chunk = 0; chunk < chains->num_chains; chunk += CHAINS_THREAD_CHUNK) {
-        i = 0;
-        while (i < num_threads) {
-            if (threads_running[i] == 0) {
-                threads_running[i] = 1;
-                ctgs[i].index_start = chunk;
-                ctgs[i].index_end   = ((chunk + CHAINS_THREAD_CHUNK) < chains->num_chains)
-                                      ? chunk + CHAINS_THREAD_CHUNK : chains->num_chains;
-                pthread_create(&(threads[i]), &thread_attr, chains_thread_generate, &(ctgs[i]));
-                notify += CHAINS_THREAD_CHUNK;
-                if (notify > CHAINS_GENERATE_NOTIFY) {
-                    printf("generating chain %lld of %lld\n",
-                           (long long unsigned int) (notify * ++notify_count),
-                           (long long unsigned int) chains->num_chains);
-                    notify = 0;
+
+    #ifdef USE_THREADS
+        for (chunk = 0; chunk < chains->num_chains; chunk += CHAINS_THREAD_CHUNK) {
+            i = 0;
+            while (i < num_threads) {
+                if (threads_running[i] == 0) {
+                    threads_running[i] = 1;
+                    ctgs[i].index_start = chunk;
+                    ctgs[i].index_end   = ((chunk + CHAINS_THREAD_CHUNK) < chains->num_chains)
+                                        ? chunk + CHAINS_THREAD_CHUNK : chains->num_chains;
+                    pthread_create(&(threads[i]), &thread_attr, chains_thread_generate, &(ctgs[i]));
+                    notify += CHAINS_THREAD_CHUNK;
+                    if (notify > CHAINS_GENERATE_NOTIFY) {
+                        printf("generating chain %lld of %lld\n",
+                            (long long unsigned int) (notify * ++notify_count),
+                            (long long unsigned int) chains->num_chains);
+                        notify = 0;
+                    }
+                    break;
                 }
-                break;
-            }
-            i++;
-            if (i == num_threads) {
-                nanosleep(&ts, &ts_rem);
-                i = 0;
+                i++;
+                if (i == num_threads) {
+                    nanosleep(&ts, &ts_rem);
+                    i = 0;
+                }
             }
         }
-    }
+    
+        // wait for all threads to finish
+        for (i = 0; i < num_threads; i++) {
+            // threads are no longer joinable, so wait for them to die
+            while (threads_running[i])
+                nanosleep(&ts, &ts_rem);
+            hash_destroy(ctgs[i].hash);
+            plaintext_destroy(ctgs[i].plaintext);
+        }
 
-    // wait for all threads to finish
-    for (i = 0; i < num_threads; i++) {
-        // threads are no longer joinable, so wait for them to die
-        while (threads_running[i])
-            nanosleep(&ts, &ts_rem);
-        hash_destroy(ctgs[i].hash);
-        plaintext_destroy(ctgs[i].plaintext);
-    }
-
-    // clean up
-    free(threads);
-    free(threads_running);
-    free(ctgs);
+        // clean up
+        free(threads);
+        free(threads_running);
+        free(ctgs);
+    #else
+        for (chunk = 0; chunk < chains->num_chains; chunk++) {
+            chain_generate(&(chains->chains[chunk]), chains->length, length, hash, plaintext);
+            notify++;
+            if (notify > CHAINS_GENERATE_NOTIFY) {
+                printf("generating chain "FLLD" of "FLLD"\n",
+                    (long long unsigned int) (notify * ++notify_count),
+                    (long long unsigned int) chains->num_chains);
+                notify = 0;
+            }
+        }
+    #endif
 
     chains->length = length;
 
@@ -182,7 +203,12 @@ void * chains_thread_generate (void * ctg_thread_arg)
     }
     
     *(ctg->thread_running) = 0;
-    pthread_exit(NULL);
+    #ifdef USE_THREDS
+        pthread_exit(NULL);
+    #else
+        return NULL;
+    #endif
+
 }
 
 
@@ -410,7 +436,7 @@ int chains_read_append (_chains * chains, char * filename)
     printf("realloc %p %p\n", chains->chains, chains_tmp.chains);
     chains->chains = chains_tmp.chains;
 
-    printf("appending %lld chains to %lld chains\n",
+    printf("appending "FLLD" chains to "FLLD" chains\n",
            (long long unsigned int) chains_tmp.num_chains,
            (long long unsigned int) chains->num_chains);
 

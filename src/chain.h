@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#include "plaintext.h"
+#include "config.h"
 #include "hash.h"
+#include "plaintext.h"
 
 #define CHAINS_THREAD_CHUNK 2048 
 #define CHAINS_GENERATE_NOTIFY 0x80000

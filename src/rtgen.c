@@ -133,7 +133,7 @@ int main (int argc, char * argv[])
         printf("sorting seeded chains and removing duplicates\n");
         chains_sort(chains);
         chains_perfect(chains);
-        printf("%lld chains after initial seeding\n",
+        printf(FLLD" chains after initial seeding\n",
             (long long int) chains->num_chains);
     }
     else
@@ -152,7 +152,7 @@ int main (int argc, char * argv[])
     else 
         chains_generate(chains, chain_length, hash, plaintext);
 
-    printf("final chain count: %lld\n", (unsigned long long int) chains->num_chains);
+    printf("final chain count: "FLLD"\n", (unsigned long long int) chains->num_chains);
 
     if (benchmark == 0) {
         printf("final chains sort\n");
