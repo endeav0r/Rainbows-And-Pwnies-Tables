@@ -134,6 +134,7 @@ int main (int argc, char * argv[])
             printf("sorting and removing duplicates\n");
             chains_sort(chains);
             chains_perfect(chains);
+            chains_write(chains, filename_out);
         }
     }
     else {

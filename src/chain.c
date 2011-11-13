@@ -300,8 +300,12 @@ int chains_write (_chains * chains, char * filename)
 {
     uint64_t i;
     FILE * fh;
+    char tmp_filename[512];
+    int error;
 
-    fh = fopen(filename, "wb");
+    snprintf(tmp_filename, 512, "%s.tmp", filename);
+
+    fh = fopen(tmp_filename, "wb");
     if (fh == NULL)
         return -1;
 
@@ -316,6 +320,13 @@ int chains_write (_chains * chains, char * filename)
     }
 
     fclose(fh);
+
+    error = rename(tmp_filename, filename);
+    if (error) {
+        fprintf(stderr, "error %d moving file %s to %s\n",
+                error, tmp_filename, filename);
+        return -1;
+    }
 
     return 0;
 }
