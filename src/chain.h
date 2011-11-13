@@ -8,7 +8,7 @@
 #include "hash.h"
 
 #define CHAINS_THREAD_CHUNK 2048 
-#define CHAINS_GENERATE_NOTIFY 0x10000
+#define CHAINS_GENERATE_NOTIFY 0x80000
 
 typedef struct _chain_s {
     uint64_t start_0;
