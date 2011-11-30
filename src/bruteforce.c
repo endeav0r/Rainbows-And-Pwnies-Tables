@@ -7,17 +7,34 @@
 
 _bruteforce * bruteforce_create (char * charset, int plaintext_length)
 {
+    FILE * fh;
+    int filesize;
     _bruteforce * bruteforce;
+    
+    bruteforce = (_bruteforce *) malloc(sizeof(_bruteforce));
+    
+    fh = fopen(charset, "rb");
+    if (fh != NULL) {
+        fseek(fh, 0, SEEK_END);
+        filesize = ftell(fh);
+        fseek(fh, 0, SEEK_SET);
+
+        bruteforce->charset = (char *) malloc(filesize);
+        fread(bruteforce->charset, 1, 1, fh);
+        fclose(fh);
+
+        bruteforce->charset_length = filesize;
+    }
+    else {
+        bruteforce->charset_length = strlen(charset);
+        bruteforce->charset = (char *) malloc(bruteforce->charset_length + 1);
+        strcpy(bruteforce->charset, charset);
+    }
 
     if (plaintext_length > PLAINTEXT_MAX_LEN)
         return NULL;
 
-    bruteforce = (_bruteforce *) malloc(sizeof(_bruteforce));
-
-    bruteforce->charset_length = strlen(charset);
     bruteforce->plaintext_length = plaintext_length;
-    bruteforce->charset = (char *) malloc(bruteforce->charset_length + 1);
-    strcpy(bruteforce->charset, charset);
     memset(bruteforce->plaintext, 0, PLAINTEXT_MAX_LEN + 1);
     bruteforce->fast_d = libdivide_u64_gen(bruteforce->charset_length);
 

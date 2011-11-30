@@ -4,7 +4,11 @@
 #include <stdio.h>
 #include <time.h>
 #ifdef USE_THREADS
-#include <sys/sysinfo.h>
+    #ifdef MINGW
+        #include <windows.h>
+    #else
+        #include <sys/sysinfo.h>
+    #endif
 #endif
 
 #define CHAINS_MH_SIZE 16 
@@ -96,18 +100,27 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
         pthread_t * threads;
         pthread_attr_t thread_attr;
         _chains_thread_generate * ctgs;
-        struct timespec ts, ts_rem;
+        #ifdef MINGW
+            SYSTEM_INFO sysinfo;
+        #else
+            struct timespec ts, ts_rem;
+        #endif
     #endif
 
     if (length <= chains->length)
         return -1;
 
     #ifdef USE_THREADS
-        ts.tv_sec = 0;
-        ts.tv_nsec = 10000;
 
         // init global thread data
-        num_threads = get_nprocs();
+        #ifdef MINGW
+            GetSystemInfo(&sysinfo);
+            num_threads = sysinfo.dwNumberOfProcessors;
+        #else
+            num_threads = get_nprocs();
+            ts.tv_sec = 0;
+            ts.tv_nsec = 10000;
+        #endif
 
         pthread_attr_init(&thread_attr);
         pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
@@ -142,7 +155,7 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
                     pthread_create(&(threads[i]), &thread_attr, chains_thread_generate, &(ctgs[i]));
                     notify += CHAINS_THREAD_CHUNK;
                     if (notify > CHAINS_GENERATE_NOTIFY) {
-                        printf("generating chain %lld of %lld\n",
+                        printf("generating chain "FLLD" of "FLLD"\n",
                             (long long unsigned int) (notify * ++notify_count),
                             (long long unsigned int) chains->num_chains);
                         notify = 0;
@@ -151,7 +164,11 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
                 }
                 i++;
                 if (i == num_threads) {
-                    nanosleep(&ts, &ts_rem);
+                    #ifdef MINGW
+                        Sleep(10);
+                    #else
+                        nanosleep(&ts, &ts_rem);
+                    #endif
                     i = 0;
                 }
             }
@@ -161,7 +178,11 @@ int chains_generate (_chains * chains, int length, _hash * hash, _plaintext * pl
         for (i = 0; i < num_threads; i++) {
             // threads are no longer joinable, so wait for them to die
             while (threads_running[i])
-                nanosleep(&ts, &ts_rem);
+                #ifdef MINGW
+                    Sleep(10);
+                #else
+                    nanosleep(&ts, &ts_rem);
+                #endif
             hash_destroy(ctgs[i].hash);
             plaintext_destroy(ctgs[i].plaintext);
         }
