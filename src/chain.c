@@ -405,6 +405,8 @@ int chains_write (_chains * chains, char * filename)
     }
 
     fclose(fh);
+    
+    unlink(filename);
 
     error = rename(tmp_filename, filename);
     if (error) {
