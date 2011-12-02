@@ -20,7 +20,7 @@ _bruteforce * bruteforce_create (char * charset, int plaintext_length)
         fseek(fh, 0, SEEK_SET);
 
         bruteforce->charset = (char *) malloc(filesize);
-        fread(bruteforce->charset, 1, 1, fh);
+        fread(bruteforce->charset, 1, filesize, fh);
         fclose(fh);
 
         bruteforce->charset_length = filesize;
