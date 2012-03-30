@@ -125,19 +125,18 @@ _markov * markov_copy (_markov * src)
 }
 
 
-char * markov_gen (_markov * markov, uint64_t seed_0, uint64_t seed_1)
+char * markov_gen (_markov * markov, uint64_t seed)
 {
     int i;
+    uint64_t sum = seed;
 
-    markov->plaintext[0] = markov->first_chars[seed_0 & markov->pow2mod];
-    seed_0 >>= markov->pow2div;
-    seed_0 |=  (seed_1 & markov->pow2mod) << (64 - markov->pow2div);
-    seed_1 >>= markov->pow2div;
+    markov->plaintext[0] = markov->first_chars[sum & markov->pow2mod];
+    sum >>= markov->pow2div;
+    sum ^= seed;
     for (i = 1; i < markov->plaintext_length; i++) {
-        markov->plaintext[i] = (char) markov->model[(int) markov->plaintext[i-1]][seed_0 & markov->pow2mod];
-        seed_0 >>= markov->pow2div;
-        seed_0 |=  (seed_1 & markov->pow2mod) << (64 - markov->pow2div);
-        seed_1 >>= markov->pow2div;
+        markov->plaintext[i] = (char) markov->model[(int) markov->plaintext[i-1]][sum & markov->pow2mod];
+        sum >>= markov->pow2div;
+        sum ^= seed ^ (sum << 17);
     }
     markov->plaintext[i] = '\0';
 

@@ -22,6 +22,6 @@ void      markov_destroy (_markov * markov);
 
 _markov * markov_copy (_markov * markov);
 
-char *    markov_gen  (_markov * markov, uint64_t seed_0, uint64_t seed_1);
+char *    markov_gen  (_markov * markov, uint64_t seed);
 
 #endif

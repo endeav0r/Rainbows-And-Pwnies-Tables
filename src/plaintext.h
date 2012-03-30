@@ -17,7 +17,7 @@ typedef struct _plaintext_s {
         _bruteforce * bruteforce;
         void * p;
     } p;
-    char * (* plaintext_gen) (void * p, uint64_t seed_0, uint64_t seed_1);
+    char * (* plaintext_gen) (void * p, uint64_t seed);
 } _plaintext;
 
 // for bruteforce, s is the charset
@@ -26,6 +26,6 @@ _plaintext * plaintext_create  (int type, char * s, int plaintext_length);
 void         plaintext_destroy (_plaintext * plaintext);
 _plaintext * plaintext_copy    (_plaintext * src);
 
-char * plaintext_gen (_plaintext * plaintext, uint64_t seed_0, uint64_t seed_1);
+char * plaintext_gen (_plaintext * plaintext, uint64_t seed);
 
 #endif

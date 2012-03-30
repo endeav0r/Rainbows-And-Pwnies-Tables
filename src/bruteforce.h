@@ -19,6 +19,6 @@ _bruteforce * bruteforce_create  (char * charset, int plaintext_length);
 void          bruteforce_destroy (_bruteforce * bruteforce);
 _bruteforce * bruteforce_copy    (_bruteforce * src);
 
-char * bruteforce_gen (_bruteforce * bruteforce, uint64_t seed_0, uint64_t seed_1);
+char * bruteforce_gen (_bruteforce * bruteforce, uint64_t seed);
 
 #endif

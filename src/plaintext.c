@@ -74,7 +74,7 @@ _plaintext * plaintext_copy (_plaintext * src)
 
 // this function is a huge bottleneck, mainly because of division, so we
 // do whatever we can to make it faster
-char * plaintext_gen (_plaintext * plaintext, uint64_t seed_0, uint64_t seed_1)
+char * plaintext_gen (_plaintext * plaintext, uint64_t seed)
 {
-    return plaintext->plaintext_gen(plaintext->p.p, seed_0, seed_1);
+    return plaintext->plaintext_gen(plaintext->p.p, seed);
 }

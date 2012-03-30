@@ -81,27 +81,26 @@ _bruteforce * bruteforce_copy (_bruteforce * src)
 
 // this function is a huge bottleneck, mainly because of division, so we
 // do whatever we can to make it faster
-char * bruteforce_gen (_bruteforce * bruteforce, uint64_t seed_0, uint64_t seed_1)
+char * bruteforce_gen (_bruteforce * bruteforce, uint64_t seed)
 {
     int i;
     int pow2div = bruteforce->pow2div;
     int pi = 0;
-    uint64_t div;
+    uint64_t div, sum;
     uint64_t plaintext_length = bruteforce->plaintext_length;
     uint64_t charset_length = bruteforce->charset_length;
     char * charset = bruteforce->charset;
     char * text = bruteforce->plaintext;
 
+    sum = seed;
     for (i = 0; i < plaintext_length; i++) {
         if (pow2div)
-            div = seed_0 >> pow2div;
+            div = sum >> pow2div;
         else
             // division is *really* slow, so we do it just once
-            div = libdivide_u64_do(seed_0, &(bruteforce->fast_d));
-        text[pi++] = charset[seed_0 - (charset_length * div)];
-        seed_0 = div;
-        if (seed_0 < charset_length)
-            seed_0 = seed_1;
+            div = libdivide_u64_do(sum, &(bruteforce->fast_d));
+        text[pi++] = charset[sum - (charset_length * div)];
+        sum = div ^ seed ^ (div << 17);
     }
 
     return text;

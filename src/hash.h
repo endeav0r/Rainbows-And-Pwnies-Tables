@@ -22,8 +22,7 @@ _hash *  hash_copy    (_hash * src);
 
 int      hash_from_string (_hash * hash, char * string);
 
-void     hash_hash    (_hash * hash, unsigned char * data, int data_len);
-uint64_t hash_index_0 (_hash * hash);
-uint64_t hash_index_1 (_hash * hash);
+void     hash_hash  (_hash * hash, unsigned char * data, int data_len);
+uint64_t hash_index (_hash * hash);
 
 #endif

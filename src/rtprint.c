@@ -46,11 +46,9 @@ int main (int argc, char * argv[])
            chains->length);
 
     for (i = 0; i < chains->num_chains; i++) {
-        printf(F016LLX" "F016LLX" - "F016LLX" "F016LLX"\n",
-               (long long unsigned int) chains->chains[i].start_0,
-               (long long unsigned int) chains->chains[i].start_1,
-               (long long unsigned int) chains->chains[i].end_0,
-               (long long unsigned int) chains->chains[i].end_1);
+        printf(F016LLX" - "F016LLX"\n",
+               (long long unsigned int) chains->chains[i].start,
+               (long long unsigned int) chains->chains[i].end);
     }
 
     chains_destroy(chains);

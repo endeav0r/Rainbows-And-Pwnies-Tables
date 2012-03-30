@@ -16,7 +16,7 @@ int main (int argc, char * argv[])
 
     int plaintexts_to_gen;
     char * model_filename = NULL;
-    uint64_t seed_0, seed_1;
+    uint64_t seed;
     int c;
 
     while ((c = getopt(argc, argv, "h")) != -1) {
@@ -41,9 +41,8 @@ int main (int argc, char * argv[])
     plaintext = plaintext_create(PLAINTEXT_TYPE_MARKOV, model_filename, 10);
     chains_mini_havege_init();
     while (plaintexts_to_gen-- > 0) {
-        seed_0 = chains_mini_havege();
-        seed_1 = chains_mini_havege();
-        printf("%s\n", plaintext_gen(plaintext, seed_0, seed_1));
+        seed = chains_mini_havege();
+        printf("%s\n", plaintext_gen(plaintext, seed));
     }
 
     plaintext_destroy(plaintext);

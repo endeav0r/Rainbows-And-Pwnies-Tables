@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 #ifdef USE_THREADS
     #ifdef MINGW
         #include <windows.h>
@@ -67,10 +68,8 @@ void chains_seed (_chains * chains)
     chains_mini_havege_init();
 
     for (chain_i = 0; chain_i < chains->num_chains; chain_i++) {
-        chains->chains[chain_i].start_0 = chains_mini_havege();
-        chains->chains[chain_i].start_1 = chains_mini_havege();
-        chains->chains[chain_i].end_0   = chains->chains[chain_i].start_0;
-        chains->chains[chain_i].end_1   = chains->chains[chain_i].start_1;
+        chains->chains[chain_i].start = chains_mini_havege();
+        chains->chains[chain_i].end   = chains->chains[chain_i].start;
         if ((chain_i & 0x7ffff) == 0)
             printf("seeded "FLLD" of "FLLD" chains\n",
                    (long long unsigned int) chain_i,
@@ -239,21 +238,19 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
     char * text;
     int false_finds = 0;
     int chain_i;
-    uint64_t needle_index_0, needle_index_1;
+    uint64_t needle_index;
 
     _chain * search_chains;
 
     search_chains = malloc(sizeof(_chain) * chains->length);
 
     hash_from_string(hash, hash_string);
-    needle_index_0 = hash_index_0(hash);
-    needle_index_1 = hash_index_1(hash);
+    needle_index = hash_index(hash);
 
     printf("generating possible endings\n");
     // generate all the possible endings
     for (depth = 0; depth < chains->length; depth++) {
-        search_chains[depth].end_0 = needle_index_0 + depth;
-        search_chains[depth].end_1 = needle_index_1;
+        search_chains[depth].end = needle_index + depth;
         chain_generate(&(search_chains[depth]), depth + 1, chains->length, hash, plaintext);
     }
 
@@ -279,7 +276,7 @@ char * chains_search (_chains * chains, _hash * hash, _plaintext * plaintext, ch
             false_finds++;
 
             text = chain_search(&(chains->chains[chain_i]), chains->length, hash, plaintext,
-                                needle_index_0, needle_index_1);
+                                needle_index);
             if (text != NULL) {
                 printf("\n");
                 free(search_chains);
@@ -337,7 +334,7 @@ void chains_sort_random (_chains * chains)
     // this is memory intensive, but we make up for it with faster quicksort later
     for (i = 0; i < chains->num_chains; i++)
         chain_swap(&(chains->chains[i]),
-                   &(chains->chains[chains->chains[i].start_0 % chains->num_chains]));
+                   &(chains->chains[chains->chains[i].start % chains->num_chains]));
 
     chain_sort (chains->chains, 0, chains->num_chains - 1);
 }
@@ -350,28 +347,23 @@ int chains_verify (_chains * chains, uint64_t chains_to_verify, _hash * hash, _p
     uint64_t index;
     _chain chain;
 
-    chain.end_0 = 0;
-    chain.end_1 = 0;
+    chain.end = 0;
 
     chains_mini_havege_init();
 
     for (i = 0; i < chains_to_verify; i++) {
         index = chains_mini_havege() % chains->num_chains;
-        chain.end_0 = chains->chains[index].start_0;
-        chain.end_1 = chains->chains[index].start_1;
+        chain.end = chains->chains[index].start;
         chain_generate(&chain, 0, chains->length, hash, plaintext);
         if (chain_cmp(&(chains->chains[index]), &chain)) {
             printf("verification round "FLLD"\n", (unsigned long long int) i);
             printf("index "FLLD"\n", (unsigned long long int) index);
-            printf("start    "F016LLX" "F016LLX"\n",
-                   (unsigned long long int) chains->chains[index].start_0,
-                   (unsigned long long int) chains->chains[index].start_1);
-            printf("execpted "F016LLX" "F016LLX"\n",
-                   (unsigned long long int) chains->chains[index].end_0,
-                   (unsigned long long int) chains->chains[index].end_1);
-            printf("received "F016LLX" "F016LLX"\n",
-                   (unsigned long long int) chain.end_0,
-                   (unsigned long long int) chain.end_1);
+            printf("start    "F016LLX"\n",
+                   (unsigned long long int) chains->chains[index].start);
+            printf("expected "F016LLX"\n",
+                   (unsigned long long int) chains->chains[index].end);
+            printf("received "F016LLX"\n",
+                   (unsigned long long int) chain.end);
             return -1;
         }
     }
@@ -398,10 +390,8 @@ int chains_write (_chains * chains, char * filename)
     fwrite(&(chains->length), sizeof(int), 1, fh);
 
     for (i = 0; i < chains->num_chains; i++) {
-        fwrite(&(chains->chains[i].start_0), sizeof(uint64_t), 1, fh);
-        fwrite(&(chains->chains[i].start_1), sizeof(uint64_t), 1, fh);
-        fwrite(&(chains->chains[i].end_0), sizeof(uint64_t), 1, fh);
-        fwrite(&(chains->chains[i].end_1), sizeof(uint64_t), 1, fh);
+        fwrite(&(chains->chains[i].start), sizeof(uint64_t), 1, fh);
+        fwrite(&(chains->chains[i].end), sizeof(uint64_t), 1, fh);
     }
 
     fclose(fh);
@@ -436,10 +426,8 @@ _chains * chains_read (char * filename)
 
     chains->chains = (_chain *) malloc(sizeof(_chain) * chains->num_chains);
     for (i = 0; i < chains->num_chains; i++) {
-        fread(&(chains->chains[i].start_0), sizeof(uint64_t), 1, fh);
-        fread(&(chains->chains[i].start_1), sizeof(uint64_t), 1, fh);
-        fread(&(chains->chains[i].end_0), sizeof(uint64_t), 1, fh);
-        fread(&(chains->chains[i].end_1), sizeof(uint64_t), 1, fh);
+        fread(&(chains->chains[i].start), sizeof(uint64_t), 1, fh);
+        fread(&(chains->chains[i].end), sizeof(uint64_t), 1, fh);
     }
 
     fclose(fh);
@@ -502,10 +490,8 @@ int chains_read_append (_chains * chains, char * filename)
            (long long unsigned int) chains->num_chains);
 
     for (i = chains->num_chains; i < chains->num_chains + chains_tmp.num_chains; i++) {
-        fread(&(chains->chains[i].start_0), sizeof(uint64_t), 1, fh);
-        fread(&(chains->chains[i].start_1), sizeof(uint64_t), 1, fh);
-        fread(&(chains->chains[i].end_0), sizeof(uint64_t), 1, fh);
-        fread(&(chains->chains[i].end_1), sizeof(uint64_t), 1, fh);
+        fread(&(chains->chains[i].start), sizeof(uint64_t), 1, fh);
+        fread(&(chains->chains[i].end), sizeof(uint64_t), 1, fh);
     }
     
     fclose(fh);
@@ -519,44 +505,38 @@ int chains_read_append (_chains * chains, char * filename)
 int chain_generate (_chain * chain, int start_length, int length, _hash * hash, _plaintext * plaintext)
 {
     int length_i;
-    uint64_t index_0, index_1;
+    uint64_t index;
 
-    index_0 = chain->end_0;
-    index_1 = chain->end_1;
+    index = chain->end;
     for (length_i = start_length; length_i < length; length_i++) {
         // call plaintext generation method directly
         hash_hash(hash, 
-                  (unsigned char *) plaintext->plaintext_gen(plaintext->p.p, index_0, index_1),
+                  (unsigned char *) plaintext->plaintext_gen(plaintext->p.p, index),
                   plaintext->plaintext_length);
-        index_0  = hash_index_0(hash);
-        index_1  = hash_index_1(hash);
-        index_0 += length_i;
+        index  = hash_index(hash);
+        index += length_i;
     }
-    chain->end_0 = index_0;
-    chain->end_1 = index_1;
+    chain->end = index;
     
     return 0;
 }
 
 
 char * chain_search (_chain * chain, int length, _hash * hash, _plaintext * plaintext,
-                     uint64_t needle_0, uint64_t needle_1)
+                     uint64_t needle)
 {
     int length_i;
-    uint64_t index_0, index_1;
+    uint64_t index;
 
-    index_0 = chain->start_0;
-    index_1 = chain->start_1;
+    index = chain->start;
     for (length_i = 0; length_i < length; length_i ++) {
         hash_hash(hash, 
-                  (unsigned char *) plaintext_gen(plaintext, index_0, index_1),
+                  (unsigned char *) plaintext_gen(plaintext, index),
                   plaintext->plaintext_length);
-        if (    (needle_0 == hash_index_0(hash))
-             && (needle_1 == hash_index_1(hash)))
-            return plaintext_gen(plaintext, index_0, index_1);
-        index_0  = hash_index_0(hash);
-        index_1  = hash_index_1(hash);
-        index_0 += length_i;
+        if (needle == hash_index(hash))
+            return plaintext_gen(plaintext, index);
+        index  = hash_index(hash);
+        index += length_i;
     }
     return NULL;
 }
@@ -564,15 +544,11 @@ char * chain_search (_chain * chain, int length, _hash * hash, _plaintext * plai
 
 int  chain_cmp  (_chain * a, _chain * b)
 {
-    if (a->end_0 < b->end_0)
+    if (a->end > b->end)
+        return 1;
+    if (a->end < b->end)
         return -1;
-    if (a->end_0 == b->end_0) {
-        if (a->end_1 < b->end_1)
-            return -1;
-        if (a->end_1 == b->end_1)
-            return 0;
-    }
-    return 1;
+    return 0;
 }
 
 
@@ -580,21 +556,13 @@ inline void chain_swap (_chain * a, _chain * b)
 {
     if (a == b)
         return;
-    a->start_0 ^= b->start_0;
-    b->start_0 ^= a->start_0;
-    a->start_0 ^= b->start_0;
+    a->start ^= b->start;
+    b->start ^= a->start;
+    a->start ^= b->start;
     
-    a->start_1 ^= b->start_1;
-    b->start_1 ^= a->start_1;
-    a->start_1 ^= b->start_1;
-    
-    a->end_0   ^= b->end_0;
-    b->end_0   ^= a->end_0;
-    a->end_0   ^= b->end_0;
-    
-    a->end_1   ^= b->end_1;
-    b->end_1   ^= a->end_1;
-    a->end_1   ^= b->end_1;
+    a->end   ^= b->end;
+    b->end   ^= a->end;
+    a->end   ^= b->end;
 }
 
 

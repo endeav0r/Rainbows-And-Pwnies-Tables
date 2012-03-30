@@ -18,12 +18,12 @@ If you're looking to generate large tables, either pick another rainbow tables i
 
 This implementation of rainbow tables has been specifically engineered to take advantage of a few discoveries in rainbow tables. While I'm not going to go into the specifics here, a few things you should know about these tables:
 
-    - 128-bit indexes
+    - Supports markov chains
     - Incremental construction of perfect rainbow tables, removing merges during generation.
 
 Other features:
     - Threaded. Automatically uses all available CPUs.
-    - NT(LM), MD4 and MD5 hashes
+    - NT, MD4 and MD5 hashes
 
 /***************
 * REQUIREMENTS *

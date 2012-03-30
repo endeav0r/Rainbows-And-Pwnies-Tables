@@ -93,23 +93,7 @@ int hash_from_string (_hash * hash, char * string)
 }
        
 
-uint64_t hash_index_0 (_hash * hash)
+uint64_t hash_index (_hash * hash)
 {
-    uint64_t index;
-
-    index  = *((uint64_t *) &(hash->sum[0])) & 0x00000000ffffffff;
-    index |= *((uint64_t *) &(hash->sum[4])) << 32;
-
-    return index;
-}
-
-
-uint64_t hash_index_1 (_hash * hash)
-{
-    uint64_t index;
-
-    index  = *((uint64_t *) &(hash->sum[ 8])) & 0x00000000ffffffff;
-    index |= *((uint64_t *) &(hash->sum[12])) << 32;
-
-    return index;
+    return *((uint64_t *) &(hash->sum[0]));
 }

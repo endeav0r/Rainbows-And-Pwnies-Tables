@@ -143,8 +143,10 @@ int main (int argc, char * argv[])
     if (chain_duplicates > 0) {
         for (i = 1; i * chain_duplicates <= chain_length; i++) {
             printf("expanding chains from %d to %d\n", chains->length, i * chain_duplicates);
+            fflush(stdout);
             chains_generate(chains, chain_duplicates * i, hash, plaintext);
             printf("sorting and removing duplicates\n");
+            fflush(stdout);
             chains_sort(chains);
             chains_perfect(chains);
         }
