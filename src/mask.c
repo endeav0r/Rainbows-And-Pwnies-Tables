@@ -11,9 +11,9 @@ _mask * mask_create (char * mask_text, int mask_length)
     for (i = 0; i < strlen(mask_text); i++) {
         if (    (mask_text[i] != 'L')
              && (mask_text[i] != 'U')
-             && (mask_text[i] != 'N')
+             && (mask_text[i] != 'D')
              && (mask_text[i] != 'S')) {
-            fprintf(stderr, "mask may only contain characters LUNS\n");
+            fprintf(stderr, "mask may only contain characters LUDS\n");
             exit(-1);
         }
     }
@@ -26,7 +26,7 @@ _mask * mask_create (char * mask_text, int mask_length)
     strcpy(mask->mask, mask_text);
     
     mask->fast_L = libdivide_u64_gen(strlen(MASK_L));
-    mask->fast_N = libdivide_u64_gen(strlen(MASK_N));
+    mask->fast_D = libdivide_u64_gen(strlen(MASK_D));
     mask->fast_S = libdivide_u64_gen(strlen(MASK_S));
 
     return mask;
@@ -51,7 +51,7 @@ _mask * mask_copy (_mask * src)
     strcpy(new_mask->mask, src->mask);
     
     new_mask->fast_L = libdivide_u64_gen(strlen(MASK_L));
-    new_mask->fast_N = libdivide_u64_gen(strlen(MASK_N));
+    new_mask->fast_D = libdivide_u64_gen(strlen(MASK_D));
     new_mask->fast_S = libdivide_u64_gen(strlen(MASK_S));
     
     return new_mask;
@@ -79,9 +79,9 @@ char * mask_gen (_mask * mask, uint64_t seed)
             div = libdivide_u64_do(sum, &(mask->fast_L));
             text[pi++] = MASK_U[sum - (STRLEN_MASK_U * div)];
             break;
-        case 'N' :
-            div = libdivide_u64_do(sum, &(mask->fast_N));
-            text[pi++] = MASK_N[sum - (STRLEN_MASK_N * div)];
+        case 'D' :
+            div = libdivide_u64_do(sum, &(mask->fast_D));
+            text[pi++] = MASK_D[sum - (STRLEN_MASK_D * div)];
             break;
         case 'S' :
             div = libdivide_u64_do(sum, &(mask->fast_S));
