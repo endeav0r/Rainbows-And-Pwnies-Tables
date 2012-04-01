@@ -18,6 +18,7 @@ void print_help ()
     printf("  -c  <string>  character set\n");
     printf("  -f  <string>  filename to write chains to\n");
     printf("  -i  <string>  filename to read chains from\n");
+    printf("  -k  <string>  use mask for plaintext generation\n");
     printf("  -l  <int>     length to extend chains to\n");
     printf("  -m  <string>  markov model filename\n");
     printf("  -p  <int>     length of plaintext\n");
@@ -25,6 +26,7 @@ void print_help ()
     printf("\n");
     printf("plaintext types:\n");
     printf("  passing -c will choose bruteforce plaintext generation\n");
+    printf("  passing -k will choose password mask generation\n");
     printf("  passing -m will choose markov plaintext generation\n");
     printf("  one and only of these options must be passed\n");
     printf("\n");
@@ -46,6 +48,7 @@ int main (int argc, char * argv[])
 
     int c;
     char *   charset          = NULL;
+    char *   mask             = NULL;
     char *   markov           = NULL;
     char *   filename_in      = NULL;
     char *   filename_out     = NULL;
@@ -69,6 +72,9 @@ int main (int argc, char * argv[])
         case 'i' :
             filename_in = optarg;
             break;
+        case 'k' :
+            mask = optarg;
+            break;
         case 'm' :
             markov = optarg;
             break;
@@ -90,13 +96,11 @@ int main (int argc, char * argv[])
         }
     }
 
-    if ((charset == NULL) && (markov == NULL))
-        fprintf(stderr, "must give charset or markov model filename\n");
-    if ((charset != NULL) && (markov != NULL))
-        fprintf(stderr, "must give charset or markov model filename\n");
+    if ((charset == NULL) && (markov == NULL) && (mask == NULL))
+        fprintf(stderr, "must give charset, mask or markov model filename\n");
     if (filename_out == NULL)
         fprintf(stderr, "must give an output filename\n");
-    if (plaintext_length == -1)
+    if ((plaintext_length == -1) && (mask == NULL))
         fprintf(stderr, "must give plaintext length.\n");
     if (filename_in == NULL)
         fprintf(stderr, "must give an input filename\n");
@@ -115,8 +119,10 @@ int main (int argc, char * argv[])
         return -1;
     }
 
-    hash      = hash_create(hash_type);
-    if (charset != NULL)
+    hash = hash_create(hash_type);
+    if (mask != NULL)
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, plaintext_length);
+    else if (charset != NULL)
         plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
     else 
         plaintext = plaintext_create(PLAINTEXT_TYPE_MARKOV, markov, plaintext_length);

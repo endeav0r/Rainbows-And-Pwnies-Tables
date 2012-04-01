@@ -4,10 +4,12 @@
 #include <stdint.h>
 
 #include "bruteforce.h"
+#include "mask.h"
 #include "markov.h"
 
 #define PLAINTEXT_TYPE_BRUTEFORCE 1
 #define PLAINTEXT_TYPE_MARKOV     2
+#define PLAINTEXT_TYPE_MASK       3
 
 typedef struct _plaintext_s {
     int plaintext_length;
@@ -15,6 +17,7 @@ typedef struct _plaintext_s {
     union {
         _markov * markov;
         _bruteforce * bruteforce;
+        _mask * mask;
         void * p;
     } p;
     char * (* plaintext_gen) (void * p, uint64_t seed);

@@ -13,12 +13,14 @@ void print_help ()
     printf("required arguments:\n");
     printf("  -c  <string>  character set\n");
     printf("  -f  <string>  filename to read chains from\n");
+    printf("  -k  <string>  use mask for plaintext generation\n");
     printf("  -m  <string>  markov model filename\n");
-    printf("  -p  <int>     length of plaintext\n");
+    printf("  -p  <int>     length of plaintext (not required with -k)\n");
     printf("  -t  <int>     hash type\n");
     printf("\n");
     printf("plaintext types:\n");
     printf("  passing -c will choose bruteforce plaintext generation\n");
+    printf("  passing -k will choose password mask generation\n");
     printf("  passing -m will choose markov plaintext generation\n");
     printf("  one and only of these options must be passed\n");
     printf("\n");
@@ -38,6 +40,7 @@ int main (int argc, char * argv[])
     _chains * chains;
 
     int c;
+    char * mask = NULL;
     char * charset = NULL;
     char * markov = NULL;
     char * filename = NULL;
@@ -49,6 +52,9 @@ int main (int argc, char * argv[])
         switch (c) {
         case 'c' :
             charset = optarg;
+            break;
+        case 'k' :
+            mask = optarg;
             break;
         case 'f' :
             filename = optarg;
@@ -71,13 +77,11 @@ int main (int argc, char * argv[])
         }
     }
 
-    if ((charset == NULL) && (markov == NULL))
-        fprintf(stderr, "must give charset or markov model filename\n");
-    if ((charset != NULL) && (markov != NULL))
-        fprintf(stderr, "must give charset or markov model filename\n");
+    if ((charset == NULL) && (markov == NULL) && (mask == NULL))
+        fprintf(stderr, "must give charset, mask or markov model filename\n");
     if (filename == NULL)
         fprintf(stderr, "must give an output filename.\n");
-    if (plaintext_length == -1)
+    if ((plaintext_length == -1) && (mask == NULL))
         fprintf(stderr, "must give a plaintext length.\n");
     if (hash_type == 0)
         fprintf(stderr, "must give a hash type\n");
@@ -94,7 +98,9 @@ int main (int argc, char * argv[])
     }
 
     hash = hash_create(hash_type);
-    if (charset != NULL)
+    if (mask != NULL)
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, plaintext_length);
+    else if (charset != NULL)
         plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
     else 
         plaintext = plaintext_create(PLAINTEXT_TYPE_MARKOV, markov, plaintext_length);

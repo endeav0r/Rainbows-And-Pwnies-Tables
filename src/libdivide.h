@@ -2,6 +2,9 @@
    Copyright 2010 ridiculous_fish
 */
 
+#ifndef libdivide_HEADER
+#define libdivide_HEADER
+
 #if defined(_WIN32) || defined(WIN32)
 #define LIBDIVIDE_WINDOWS 1
 #endif
@@ -1299,4 +1302,7 @@ __m128i operator/(__m128i numer, const divider<int_type, ALGO> & denom) {
 #ifdef __cplusplus
 } //close namespace libdivide
 } //close anonymous namespace
+#endif
+
+
 #endif

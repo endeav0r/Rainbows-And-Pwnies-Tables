@@ -19,12 +19,16 @@ _plaintext * plaintext_create (int type, char * s, int plaintext_length)
 
     switch (type) {
     case PLAINTEXT_TYPE_BRUTEFORCE :
-        plaintext->p.bruteforce = bruteforce_create(s, plaintext_length);
-        plaintext->plaintext_gen = bruteforce_gen;
+        plaintext->p.bruteforce  = bruteforce_create(s, plaintext_length);
+        plaintext->plaintext_gen = (char * (*) (void *, uint64_t)) bruteforce_gen;
         break;
     case PLAINTEXT_TYPE_MARKOV :
-        plaintext->p.markov     = markov_create(s, plaintext_length);
-        plaintext->plaintext_gen = markov_gen;
+        plaintext->p.markov      = markov_create(s, plaintext_length);
+        plaintext->plaintext_gen = (char * (*) (void *, uint64_t)) markov_gen;
+        break;
+    case PLAINTEXT_TYPE_MASK :
+        plaintext->p.mask        = mask_create(s, plaintext_length);
+        plaintext->plaintext_gen = (char * (*) (void *, uint64_t)) mask_gen;
         break;
     default :
         fprintf(stderr, "invalid plaintext type\n");
@@ -44,6 +48,8 @@ void plaintext_destroy (_plaintext * plaintext)
     case PLAINTEXT_TYPE_MARKOV :
         markov_destroy(plaintext->p.markov);
         break;
+    case PLAINTEXT_TYPE_MASK :
+        mask_destroy(plaintext->p.mask);
     }
     free(plaintext);
 }
@@ -65,6 +71,9 @@ _plaintext * plaintext_copy (_plaintext * src)
         break;
     case PLAINTEXT_TYPE_MARKOV :
         dst->p.markov = markov_copy(src->p.markov);
+        break;
+    case PLAINTEXT_TYPE_MASK :
+        dst->p.mask = mask_copy(src->p.mask);
         break;
     }
 

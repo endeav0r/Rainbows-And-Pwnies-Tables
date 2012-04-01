@@ -1,4 +1,4 @@
-TARGET = 'mingw32'
+TARGET = 'linux'
 
 if TARGET == 'mingw32' :
     env = Environment(CC='i486-mingw32-gcc')
@@ -9,7 +9,7 @@ elif TARGET == 'linux' :
     env.AppendUnique(CFLAGS=['-DUSE_THREADS', '-O3', '-Wall', '-pthread', '-Wno-unused-function', '-fno-strict-aliasing'])
     env.AppendUnique(LINKFLAGS=['-pthread', '-lm'])
 
-src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash', 'markov', 'bruteforce']
+src_c     = ['md4', 'md5', 'nt', 'plaintext', 'chain', 'hash', 'markov', 'bruteforce', 'mask']
 
 sources_c =  map(lambda x: 'src/' + x + '.c', src_c)
 

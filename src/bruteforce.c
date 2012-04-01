@@ -100,7 +100,7 @@ char * bruteforce_gen (_bruteforce * bruteforce, uint64_t seed)
             // division is *really* slow, so we do it just once
             div = libdivide_u64_do(sum, &(bruteforce->fast_d));
         text[pi++] = charset[sum - (charset_length * div)];
-        sum = div ^ seed ^ (div << 17);
+        sum = div ^ seed ^ (sum << 17);
     }
 
     return text;
