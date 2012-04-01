@@ -58,7 +58,7 @@ int main (int argc, char * argv[])
     int      hash_type        = 0;
     int      i;
 
-    while ((c = getopt(argc, argv, "c:d:f:i:hl:m:p:t:")) != -1) {
+    while ((c = getopt(argc, argv, "c:d:f:i:k:hl:m:p:t:")) != -1) {
         switch (c) {
         case 'c' :
             charset = optarg;
@@ -108,20 +108,19 @@ int main (int argc, char * argv[])
         fprintf(stderr, "must give a hash type\n");
     if (chain_length == -1)
         fprintf(stderr, "must give a chain length\n");
-    if (    (plaintext_length == -1)
+    if (    ((plaintext_length == -1) && (mask == NULL))
          || (filename_in == NULL)
          || (filename_out == NULL)
          || (hash_type == 0)
          || (chain_length == -1)
-         || ((charset == NULL) && (markov == NULL))
-         || ((charset != NULL) && (markov != NULL))) {
+         || ((charset == NULL) && (markov == NULL) && (mask == NULL))) {
         fprintf(stderr, "use -h for help\n");
         return -1;
     }
 
     hash = hash_create(hash_type);
     if (mask != NULL)
-        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, plaintext_length);
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, strlen(mask));
     else if (charset != NULL)
         plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
     else 

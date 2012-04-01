@@ -88,7 +88,7 @@ char * mask_gen (_mask * mask, uint64_t seed)
             text[pi++] = MASK_S[sum - (STRLEN_MASK_S * div)];
             break;
         }
-        sum = div ^ seed ^ (div << 17);
+        sum = div;
     }
 
     return text;

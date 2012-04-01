@@ -48,16 +48,16 @@ int main (int argc, char * argv[])
     int    hash_type = 0;
     char * found;
     
-    while ((c = getopt(argc, argv, "c:f:m:p:ht:")) != -1) {
+    while ((c = getopt(argc, argv, "c:f:k:m:p:ht:")) != -1) {
         switch (c) {
         case 'c' :
             charset = optarg;
             break;
-        case 'k' :
-            mask = optarg;
-            break;
         case 'f' :
             filename = optarg;
+            break;
+        case 'k' :
+            mask = optarg;
             break;
         case 'm' :
             markov = optarg;
@@ -87,19 +87,18 @@ int main (int argc, char * argv[])
         fprintf(stderr, "must give a hash type\n");
     if (optind >= argc)
         fprintf(stderr, "must give hash as argument.\n");
-    if (    (filename == NULL)
-         || (plaintext_length == -1)
+    if (    ((plaintext_length == -1) && (mask == NULL))
+         || (filename == NULL)
          || (hash_type == 0)
          || (optind >= argc) 
-         || ((charset == NULL) && (markov == NULL))
-         || ((charset != NULL) && (markov != NULL))) {
+         || ((charset == NULL) && (markov == NULL) && (mask == NULL))) {
         fprintf(stderr, "use -h for help\n");
         return -1;
     }
 
     hash = hash_create(hash_type);
     if (mask != NULL)
-        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, plaintext_length);
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, strlen(mask));
     else if (charset != NULL)
         plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
     else 

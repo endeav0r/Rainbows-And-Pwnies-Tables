@@ -58,7 +58,7 @@ int main (int argc, char * argv[])
     int      benchmark = 0;
     int      i;
 
-    while ((c = getopt(argc, argv, "bc:d:f:hl:m:n:p:t:")) != -1) {
+    while ((c = getopt(argc, argv, "bc:d:f:hk:l:m:n:p:t:")) != -1) {
         switch (c) {
         case 'b' :
             benchmark = 1;
@@ -73,7 +73,7 @@ int main (int argc, char * argv[])
             filename = optarg;
             break;
         case 'k' :
-            filename = optarg;
+            mask = optarg;
             break;
         case 'p' :
             plaintext_length = atoi(optarg);
@@ -111,13 +111,12 @@ int main (int argc, char * argv[])
         fprintf(stderr, "must give a hash type\n");
     if (chain_length == -1)
         fprintf(stderr, "must give a chain length\n");
-    if (    (plaintext_length == -1)
+    if (    ((plaintext_length == -1) && (mask == NULL))
          || (num_chains == 0)
          || (filename == NULL)
          || (hash_type == 0)
          || (chain_length == -1)
-         || ((charset == NULL) && (markov == NULL))
-         || ((charset != NULL) && (markov != NULL))) {
+         || ((charset == NULL) && (markov == NULL) && (mask == NULL))) {
         fprintf(stderr, "use -h for help\n");
         return -1;
     }
@@ -125,7 +124,7 @@ int main (int argc, char * argv[])
     hash = hash_create(hash_type);
     printf("plaintext length: %d\n", plaintext_length);
     if (mask != NULL)
-        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, plaintext_length);
+        plaintext = plaintext_create(PLAINTEXT_TYPE_MASK, mask, strlen(mask));
     else if (charset != NULL)
         plaintext = plaintext_create(PLAINTEXT_TYPE_BRUTEFORCE, charset, plaintext_length);
     else 
